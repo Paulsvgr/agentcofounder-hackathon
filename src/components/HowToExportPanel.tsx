@@ -28,10 +28,13 @@ npm run export:run -- <run-id> --approach base`}</pre>
 
         <ul className="list-plain">
           <li>
-            Paste file: <code>artifacts/exports/&lt;run-id&gt;.json</code>
+            Prefer paste: <code>artifacts/exports/&lt;run-id&gt;.json</code> (schema{" "}
+            <code>agentcofounder.run_export.v1</code>)
           </li>
           <li>
-            Schema must be <code>agentcofounder.run_export.v1</code>
+            Or paste legacy <code>artifacts/runs/&lt;run-id&gt;/result.json</code> — this app asks
+            for approach / provider / model / run id, then the server normalizes to v1 (wall time
+            &amp; phase breakdown stay empty)
           </li>
           <li>
             <code>--approach</code> = label for comparisons (e.g. <code>base</code>,{" "}

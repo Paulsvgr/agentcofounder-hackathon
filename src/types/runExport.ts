@@ -45,15 +45,27 @@ export type RunExport = {
   };
   efficiency: {
     weighted_total: number;
-    wall_seconds: number;
+    wall_seconds: number | null;
     seconds_per_call: number | null;
     time_to_final_green_s: number | null;
     time_to_first_failing_test_s: number | null;
-    npm_test_command_count: number;
-    auto_test_trigger_hits: number;
+    npm_test_command_count: number | null;
+    auto_test_trigger_hits: number | null;
     phase_heuristic: PhaseBucket[];
   };
 };
+
+/** Meta fields the user can fill after a legacy result.json paste. */
+export type PasteOverrides = {
+  approach?: string;
+  provider?: string;
+  model?: string;
+  run_id?: string;
+  git_branch?: string | null;
+  git_commit?: string | null;
+};
+
+export type PasteKind = "run_export_v1" | "result_json";
 
 /** Human fields — UI / DB only, never part of paste schema. */
 export type HumanFields = {
@@ -68,12 +80,14 @@ export type HumanFields = {
  * Top-level git_* keys keep server filters working.
  */
 export type HackathonRunData = {
+  run_id?: string | null;
   git_branch: string | null;
   git_commit: string | null;
   approach_kind: string | null;
   app_rating: number | null;
   app_comment: string;
   run_comment: string;
+  paste_kind?: string;
   export: RunExport;
 };
 

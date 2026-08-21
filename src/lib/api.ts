@@ -2,6 +2,7 @@ import type {
   HackathonRunData,
   HackathonRunRecord,
   HumanFields,
+  PasteOverrides,
   RunExport,
 } from "../types/runExport";
 
@@ -133,5 +134,29 @@ export async function createRun(input: {
     method: "POST",
     accessKey: input.accessKey,
     body: JSON.stringify({ person: input.person, data: input.data }),
+  });
+}
+
+/** Preferred create: server detects + normalizes paste to run_export.v1. */
+export async function createRunFromPaste(input: {
+  author: string;
+  paste: unknown;
+  overrides?: PasteOverrides;
+  app_rating?: number | null;
+  app_comment?: string;
+  run_comment?: string;
+  accessKey: string;
+}): Promise<HackathonRunRecord> {
+  return request<HackathonRunRecord>("/api/v1/runs/", {
+    method: "POST",
+    accessKey: input.accessKey,
+    body: JSON.stringify({
+      author: input.author,
+      paste: input.paste,
+      overrides: input.overrides || {},
+      app_rating: input.app_rating ?? null,
+      app_comment: input.app_comment || "",
+      run_comment: input.run_comment || "",
+    }),
   });
 }

@@ -2,22 +2,42 @@ import { useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { HowToExportPanel } from "../components/HowToExportPanel";
 import {
-  buildRunData,
-  createRun,
+  createRunFromPaste,
   getStoredAccessKey,
   setStoredAccessKey,
 } from "../lib/api";
-import { parseRunExport } from "../lib/parseExport";
-import { HACKATHON_AUTHORS, type RunExport } from "../types/runExport";
+import {
+  inspectPaste,
+  normalizeDetected,
+  type DetectedPaste,
+} from "../lib/parseExport";
+import {
+  HACKATHON_AUTHORS,
+  type PasteKind,
+  type PasteOverrides,
+  type RunExport,
+} from "../types/runExport";
 
-type Step = "paste" | "human";
+type Step = "paste" | "meta" | "human";
 
 export function AddRunPage() {
   const navigate = useNavigate();
   const [author, setAuthor] = useState(HACKATHON_AUTHORS[0]);
   const [paste, setPaste] = useState("");
+  const [detected, setDetected] = useState<Extract<DetectedPaste, { kind: PasteKind }> | null>(
+    null,
+  );
   const [parsed, setParsed] = useState<RunExport | null>(null);
+  const [pasteKind, setPasteKind] = useState<PasteKind | null>(null);
   const [step, setStep] = useState<Step>("paste");
+
+  const [approach, setApproach] = useState("");
+  const [provider, setProvider] = useState("");
+  const [model, setModel] = useState("");
+  const [runId, setRunId] = useState("");
+  const [gitBranch, setGitBranch] = useState("");
+  const [gitCommit, setGitCommit] = useState("");
+
   const [appRating, setAppRating] = useState("7");
   const [appComment, setAppComment] = useState("");
   const [runComment, setRunComment] = useState("");
@@ -36,16 +56,70 @@ export function AddRunPage() {
     };
   }, [parsed]);
 
+  function overridesFromForm(): PasteOverrides {
+    return {
+      approach: approach.trim() || undefined,
+      provider: provider.trim() || undefined,
+      model: model.trim() || undefined,
+      run_id: runId.trim() || undefined,
+      git_branch: gitBranch.trim() || null,
+      git_commit: gitCommit.trim() || null,
+    };
+  }
+
+  function fillMetaForm(suggested: PasteOverrides) {
+    setApproach(suggested.approach || "");
+    setProvider(suggested.provider || "");
+    setModel(suggested.model || "");
+    setRunId(suggested.run_id || "");
+    setGitBranch(suggested.git_branch || "");
+    setGitCommit(suggested.git_commit || "");
+  }
+
   function onValidate() {
     setError(null);
-    const result = parseRunExport(paste);
-    if (!result.ok) {
+    const inspected = inspectPaste(paste);
+    if (inspected.kind === "invalid" || inspected.kind === "unknown") {
+      setDetected(null);
       setParsed(null);
-      setError(result.error);
+      setPasteKind(null);
+      setError(inspected.error);
       setStep("paste");
       return;
     }
-    setParsed(result.export);
+
+    setDetected(inspected);
+    setPasteKind(inspected.kind);
+    const first = normalizeDetected(inspected, {});
+    if (!first.ok) {
+      setError(first.error);
+      return;
+    }
+
+    fillMetaForm(first.suggested);
+    setParsed(first.export);
+
+    if (inspected.kind === "result_json" || first.needsMeta) {
+      setStep("meta");
+      return;
+    }
+    setStep("human");
+  }
+
+  function onConfirmMeta() {
+    setError(null);
+    if (!detected) {
+      setError("Paste again.");
+      setStep("paste");
+      return;
+    }
+    const next = normalizeDetected(detected, overridesFromForm());
+    if (!next.ok) {
+      setError(next.error);
+      return;
+    }
+    setParsed(next.export);
+    fillMetaForm(next.suggested);
     setStep("human");
   }
 
@@ -56,7 +130,9 @@ export function AddRunPage() {
       if (!res.ok) throw new Error("Could not load sample export.");
       const text = await res.text();
       setPaste(text);
+      setDetected(null);
       setParsed(null);
+      setPasteKind(null);
       setStep("paste");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Could not load sample.");
@@ -64,7 +140,7 @@ export function AddRunPage() {
   }
 
   async function onSave() {
-    if (!parsed) return;
+    if (!detected || !parsed) return;
     setError(null);
     const ratingNum = Number(appRating);
     if (!Number.isFinite(ratingNum) || ratingNum < 0 || ratingNum > 10) {
@@ -79,15 +155,13 @@ export function AddRunPage() {
     setSaving(true);
     try {
       setStoredAccessKey(accessKey.trim());
-      const data = buildRunData(parsed, {
+      const record = await createRunFromPaste({
         author,
+        paste: detected.raw,
+        overrides: overridesFromForm(),
         app_rating: ratingNum,
         app_comment: appComment.trim(),
         run_comment: runComment.trim(),
-      });
-      const record = await createRun({
-        person: author,
-        data,
         accessKey: accessKey.trim(),
       });
       navigate(`/runs/${record.id}`);
@@ -105,8 +179,9 @@ export function AddRunPage() {
       <section className="panel">
         <h2>Add run</h2>
         <p className="muted" style={{ marginTop: 0 }}>
-          Paste <code>artifacts/exports/&lt;run_id&gt;.json</code> from the harness. Schema must
-          be <code>agentcofounder.run_export.v1</code>. Need the steps? See{" "}
+          Paste <code>artifacts/exports/&lt;run_id&gt;.json</code> (preferred) or legacy{" "}
+          <code>artifacts/runs/&lt;run_id&gt;/result.json</code>. Server stores{" "}
+          <code>agentcofounder.run_export.v1</code> only. See{" "}
           <Link to="/how-to">How to export</Link>.
         </p>
 
@@ -129,12 +204,12 @@ export function AddRunPage() {
           {step === "paste" && (
             <>
               <div className="field">
-                <label htmlFor="paste">Paste run export JSON</label>
+                <label htmlFor="paste">Paste run JSON</label>
                 <textarea
                   id="paste"
                   value={paste}
                   onChange={(e) => setPaste(e.target.value)}
-                  placeholder='{ "schema": "agentcofounder.run_export.v1", ... }'
+                  placeholder='run_export.v1 or result.json'
                   spellCheck={false}
                 />
               </div>
@@ -149,11 +224,98 @@ export function AddRunPage() {
             </>
           )}
 
+          {step === "meta" && (
+            <>
+              {pasteKind === "result_json" && (
+                <div className="alert alert-error" style={{ borderColor: "rgba(255,184,107,0.45)", color: "#ffe0b5", background: "rgba(255,184,107,0.08)" }}>
+                  Legacy <code>result.json</code> — wall time and phase breakdown unavailable
+                  unless you export from <code>setup/measure</code>.
+                </div>
+              )}
+              <h3 style={{ margin: 0 }}>Complete run info</h3>
+              <div className="row">
+                <div className="field">
+                  <label htmlFor="approach">Approach (required)</label>
+                  <input
+                    id="approach"
+                    value={approach}
+                    onChange={(e) => setApproach(e.target.value)}
+                    placeholder="base, harness/paul, …"
+                  />
+                </div>
+                <div className="field">
+                  <label htmlFor="runId">Run id (required)</label>
+                  <input
+                    id="runId"
+                    value={runId}
+                    onChange={(e) => setRunId(e.target.value)}
+                    placeholder="artifacts/runs/&lt;run-id&gt; folder name"
+                  />
+                </div>
+              </div>
+              <div className="row">
+                <div className="field">
+                  <label htmlFor="provider">Provider (required)</label>
+                  <input
+                    id="provider"
+                    value={provider}
+                    onChange={(e) => setProvider(e.target.value)}
+                    placeholder="zai, berget, openai, …"
+                  />
+                </div>
+                <div className="field">
+                  <label htmlFor="model">Model (required)</label>
+                  <input
+                    id="model"
+                    value={model}
+                    onChange={(e) => setModel(e.target.value)}
+                    placeholder="prefilled from call_log when possible"
+                  />
+                </div>
+              </div>
+              <div className="row">
+                <div className="field">
+                  <label htmlFor="gitBranch">Git branch (optional)</label>
+                  <input
+                    id="gitBranch"
+                    value={gitBranch}
+                    onChange={(e) => setGitBranch(e.target.value)}
+                  />
+                </div>
+                <div className="field">
+                  <label htmlFor="gitCommit">Git commit (optional)</label>
+                  <input
+                    id="gitCommit"
+                    value={gitCommit}
+                    onChange={(e) => setGitCommit(e.target.value)}
+                  />
+                </div>
+              </div>
+              <div className="row">
+                <button
+                  type="button"
+                  className="btn btn-ghost"
+                  onClick={() => {
+                    setStep("paste");
+                    setParsed(null);
+                    setDetected(null);
+                  }}
+                >
+                  Back
+                </button>
+                <button type="button" className="btn" onClick={onConfirmMeta}>
+                  Continue
+                </button>
+              </div>
+            </>
+          )}
+
           {step === "human" && preview && (
             <>
               <div className="alert alert-ok">
-                Parsed <strong>{preview.runId}</strong> · {preview.approach} · status{" "}
-                {preview.status} · weighted {preview.weighted}
+                {pasteKind === "result_json" ? "Normalized legacy paste" : "Parsed"}{" "}
+                <strong>{preview.runId}</strong> · {preview.approach} · status {preview.status} ·
+                weighted {preview.weighted}
               </div>
 
               <div className="row">
@@ -208,10 +370,7 @@ export function AddRunPage() {
                 <button
                   type="button"
                   className="btn btn-ghost"
-                  onClick={() => {
-                    setStep("paste");
-                    setParsed(null);
-                  }}
+                  onClick={() => setStep(pasteKind === "result_json" ? "meta" : "paste")}
                 >
                   Back
                 </button>

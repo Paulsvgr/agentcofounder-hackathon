@@ -45,7 +45,12 @@ Do **not** add `HACKATHON_ACCESS_CODE` to Vercel — that stays on webeditor onl
 
 ## Paste contract
 
-Only `agentcofounder.run_export.v1` with top-level `schema`, `meta`, `harness`, `efficiency`.
+Accepts:
+
+1. Preferred `agentcofounder.run_export.v1` (`schema` / `meta` / `harness` / `efficiency`)
+2. Legacy harness `result.json` — UI asks for approach / provider / model / run id; server normalizes to v1
+
+Never stores raw `result.json`. See [`docs/ACCEPT_PASTE_FORMATS.md`](./docs/ACCEPT_PASTE_FORMATS.md).
 
 Sample: [`public/sample-run-export.json`](./public/sample-run-export.json)
 
