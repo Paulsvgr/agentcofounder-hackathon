@@ -88,8 +88,7 @@ export type HackathonRunRecord = {
 export const HACKATHON_AUTHORS = [
   "paul",
   "mohammed",
-  "ali",
-  "sina",
+  "ali sina",
   "shivam",
 ] as const;
 

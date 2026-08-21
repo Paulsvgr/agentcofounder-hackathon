@@ -1,5 +1,7 @@
 import { NavLink, Outlet } from "react-router-dom";
 
+const STEPS_HREF = "/steps.html";
+
 export function Layout() {
   return (
     <div className="app-shell">
@@ -15,8 +17,24 @@ export function Layout() {
           <NavLink to="/add" className={({ isActive }) => (isActive ? "active" : undefined)}>
             Add run
           </NavLink>
+          <NavLink to="/how-to" className={({ isActive }) => (isActive ? "active" : undefined)}>
+            How to export
+          </NavLink>
+          <a className="nav-btn" href={STEPS_HREF} target="_blank" rel="noreferrer">
+            Steps plan
+          </a>
         </nav>
       </header>
+
+      <div className="quick-bar">
+        <p className="muted" style={{ margin: 0 }}>
+          Team checklist &amp; export steps (Phase I)
+        </p>
+        <a className="btn" href={STEPS_HREF} target="_blank" rel="noreferrer">
+          Open steps.html
+        </a>
+      </div>
+
       <Outlet />
     </div>
   );

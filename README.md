@@ -51,6 +51,8 @@ Sample: [`public/sample-run-export.json`](./public/sample-run-export.json)
 
 Human fields (`app_rating`, `app_comment`, `run_comment`) are UI/DB only — not in the export file.
 
+In the app, open **How to export** (`/how-to`) for the full harness steps (`setup/measure` → analyze → `export:run`).
+
 ## Authors
 
-`paul` · `mohammed` · `ali` · `sina` · `shivam`
+`paul` · `mohammed` · `ali sina` · `shivam`

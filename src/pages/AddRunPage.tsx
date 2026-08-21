@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { HowToExportPanel } from "../components/HowToExportPanel";
 import {
   buildRunData,
   createRun,
@@ -99,12 +100,14 @@ export function AddRunPage() {
 
   return (
     <div className="stack">
+      <HowToExportPanel defaultOpen={false} />
+
       <section className="panel">
         <h2>Add run</h2>
         <p className="muted" style={{ marginTop: 0 }}>
-          Paste <code>artifacts/exports/&lt;run_id&gt;.json</code> from{" "}
-          <code>npm run export:run</code>. Schema must be{" "}
-          <code>agentcofounder.run_export.v1</code>.
+          Paste <code>artifacts/exports/&lt;run_id&gt;.json</code> from the harness. Schema must
+          be <code>agentcofounder.run_export.v1</code>. Need the steps? See{" "}
+          <Link to="/how-to">How to export</Link>.
         </p>
 
         <div className="stack">

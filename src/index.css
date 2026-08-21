@@ -123,6 +123,31 @@ textarea {
   color: var(--accent);
 }
 
+.nav a.nav-btn {
+  border-color: var(--accent-dim);
+  background: linear-gradient(180deg, rgba(125, 255, 179, 0.22), rgba(61, 154, 104, 0.28));
+  color: var(--text);
+  font-weight: 600;
+}
+
+.nav a.nav-btn:hover {
+  border-color: var(--accent);
+  filter: brightness(1.08);
+}
+
+.quick-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin: 0 0 1.25rem;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: rgba(125, 255, 179, 0.06);
+}
+
 .panel {
   background: linear-gradient(180deg, rgba(26, 38, 33, 0.92), rgba(18, 26, 23, 0.96));
   border: 1px solid var(--line);
@@ -383,4 +408,67 @@ table.runs tbody tr:hover {
   .phase-row {
     grid-template-columns: 1fr;
   }
+}
+
+.howto summary {
+  cursor: pointer;
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.5rem 0.75rem;
+  font-family: var(--font-display);
+  font-size: 1.15rem;
+  letter-spacing: -0.02em;
+}
+
+.howto summary::-webkit-details-marker {
+  display: none;
+}
+
+.howto summary::before {
+  content: "▸";
+  color: var(--accent);
+  font-family: var(--font-mono);
+  font-size: 0.9rem;
+}
+
+.howto[open] summary::before {
+  content: "▾";
+}
+
+.howto-title {
+  font-weight: 700;
+}
+
+.howto-sub {
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  font-weight: 400;
+}
+
+.howto-body {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--line);
+}
+
+.code-block {
+  margin: 0;
+  padding: 0.85rem 1rem;
+  overflow-x: auto;
+  border-radius: 8px;
+  border: 1px solid var(--line);
+  background: rgba(0, 0, 0, 0.35);
+  font-size: 0.78rem;
+  line-height: 1.55;
+  white-space: pre;
+}
+
+.howto-table tbody tr {
+  cursor: default;
+}
+
+.howto-table tbody tr:hover {
+  background: transparent;
 }
