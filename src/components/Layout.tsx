@@ -44,15 +44,6 @@ export function Layout() {
           </div>
         </header>
 
-        <div className="quick-bar">
-          <p className="muted" style={{ margin: 0 }}>
-            Team checklist &amp; export steps (Phase I)
-          </p>
-          <a className="btn" href={STEPS_HREF} target="_blank" rel="noreferrer">
-            Open steps.html
-          </a>
-        </div>
-
         <main className="page-main">
           <Outlet />
         </main>

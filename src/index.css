@@ -20,7 +20,7 @@ html[data-theme="light"] {
   --font-mono: "IBM Plex Mono", ui-monospace, monospace;
   --radius: 10px;
   --shadow: 0 10px 28px rgba(20, 32, 26, 0.08);
-  --shell-max: 1100px;
+  --shell-max: 1400px;
   color-scheme: light;
 }
 
@@ -55,13 +55,16 @@ html {
   width: 100%;
   margin: 0;
   padding: 0;
+  overflow-x: hidden;
 }
 
 body {
   width: 100%;
+  max-width: 100%;
   min-height: 100vh;
   margin: 0;
   padding: 0;
+  overflow-x: hidden;
   font-family: var(--font-mono);
   font-size: 15px;
   line-height: 1.55;
@@ -71,10 +74,12 @@ body {
 
 #root {
   width: 100%;
+  max-width: 100%;
   min-height: 100vh;
   margin: 0;
   padding: 0;
   display: block;
+  overflow-x: hidden;
 }
 
 a {
@@ -98,30 +103,34 @@ textarea {
 /* Full-bleed centering wrapper — shell is never left-pinned */
 .app-frame {
   width: 100%;
+  max-width: 100%;
   min-height: 100vh;
   display: flex;
   justify-content: center;
   align-items: flex-start;
   padding: 0 clamp(0.75rem, 2.5vw, 1.5rem);
+  box-sizing: border-box;
+  overflow-x: hidden;
 }
 
 .app-shell {
-  width: 100%;
+  box-sizing: border-box;
+  width: min(100%, var(--shell-max));
+  max-width: 100%;
+  min-width: 0;
   margin: 0 auto;
   padding: 1.5rem 0 3.5rem;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
+  align-items: stretch;
 }
 
-.page-main {
-  width: 100%;
-}
-
+.page-main,
 .page-main > .stack,
 .page-center {
   width: 100%;
+  max-width: 100%;
+  min-width: 0;
 }
 
 .topbar {
@@ -246,12 +255,16 @@ textarea {
 
 .panel {
   width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
   background: var(--bg-1);
   border: 1px solid var(--line);
   border-radius: var(--radius);
   box-shadow: var(--shadow);
   padding: 1.25rem 1.35rem;
   margin-inline: auto;
+  overflow-x: hidden;
 }
 
 .page-center .panel > h2,
@@ -352,6 +365,9 @@ textarea {
   grid-template-columns: 1fr 1fr;
   gap: 0.85rem;
   margin: 0.5rem 0 1.25rem;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
 }
 
 .chart-card-wide {
@@ -364,6 +380,9 @@ textarea {
   padding: 0.85rem 0.9rem 0.65rem;
   background: var(--bg-1);
   text-align: center;
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
 }
 
 @media (max-width: 900px) {
@@ -387,7 +406,10 @@ textarea {
 
 .chart-box {
   width: 100%;
+  max-width: 100%;
+  min-width: 0;
   min-height: 300px;
+  overflow: hidden;
 }
 
 .chart-empty {
@@ -405,6 +427,8 @@ textarea {
   display: grid;
   gap: 0.85rem;
   width: 100%;
+  max-width: 100%;
+  min-width: 0;
 }
 
 .btn {
@@ -460,11 +484,15 @@ textarea {
 }
 
 .table-wrap {
+  width: 100%;
+  max-width: 100%;
   overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 table.runs {
-  width: 100%;
+  width: max-content;
+  min-width: 100%;
   border-collapse: collapse;
   font-size: 0.9rem;
   color: var(--text);
