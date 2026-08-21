@@ -227,7 +227,7 @@ export function AddRunPage() {
           {step === "meta" && (
             <>
               {pasteKind === "result_json" && (
-                <div className="alert alert-error" style={{ borderColor: "rgba(255,184,107,0.45)", color: "#ffe0b5", background: "rgba(255,184,107,0.08)" }}>
+                <div className="alert alert-warn">
                   Legacy <code>result.json</code> — wall time and phase breakdown unavailable
                   unless you export from <code>setup/measure</code>.
                 </div>
