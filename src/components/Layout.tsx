@@ -35,7 +35,9 @@ export function Layout() {
         </a>
       </div>
 
-      <Outlet />
+      <main className="page-main">
+        <Outlet />
+      </main>
     </div>
   );
 }

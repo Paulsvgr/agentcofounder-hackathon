@@ -173,7 +173,7 @@ export function AddRunPage() {
   }
 
   return (
-    <div className="stack">
+    <div className="stack page-center">
       <HowToExportPanel defaultOpen={false} />
 
       <section className="panel">

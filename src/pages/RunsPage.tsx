@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { RunsCharts } from "../components/RunsCharts";
 import { listRuns } from "../lib/api";
 import {
   approachKey,
@@ -19,6 +20,11 @@ function statusBadge(status: string | undefined) {
   return "badge badge-warn";
 }
 
+function isNoiseApproach(key: string): boolean {
+  const k = key.toLowerCase();
+  return k === "early-smoke" || k === "unknown" || k === "—" || k === "-";
+}
+
 export function RunsPage() {
   const navigate = useNavigate();
   const [runs, setRuns] = useState<HackathonRunRecord[]>([]);
@@ -30,6 +36,7 @@ export function RunsPage() {
   const [branch, setBranch] = useState("");
   const [status, setStatus] = useState("");
   const [sort, setSort] = useState<SortKey>("weighted_asc");
+  const [hideNoise, setHideNoise] = useState(true);
 
   useEffect(() => {
     let cancelled = false;
@@ -71,6 +78,9 @@ export function RunsPage() {
 
   const filtered = useMemo(() => {
     let list = [...runs];
+    if (hideNoise) {
+      list = list.filter((r) => !isNoiseApproach(approachKey(r)));
+    }
     if (author) list = list.filter((r) => r.person === author);
     if (approach) list = list.filter((r) => approachKey(r) === approach);
     if (branch) {
@@ -101,18 +111,20 @@ export function RunsPage() {
       return wa - wb;
     });
     return list;
-  }, [runs, author, approach, branch, status, sort]);
+  }, [runs, author, approach, branch, status, sort, hideNoise]);
+
+  const chartMedians = useMemo(() => medianWeightedByApproach(filtered), [filtered]);
 
   return (
-    <div className="stack">
+    <div className="stack page-center">
       <section className="panel">
         <h2>Compare runs</h2>
-        <p className="muted" style={{ marginTop: 0 }}>
-          Lower <code>weighted_total</code> is better when status is comparable. Median is
-          shown per approach.
+        <p className="muted lead">
+          Lower <code>weighted_total</code> is better when status is comparable. Charts use the
+          same filters as the table.
         </p>
 
-        <div className="row" style={{ marginBottom: "0.75rem" }}>
+        <div className="filters row">
           <div className="field">
             <label htmlFor="f-author">Author</label>
             <select id="f-author" value={author} onChange={(e) => setAuthor(e.target.value)}>
@@ -172,67 +184,79 @@ export function RunsPage() {
               <option value="newest">newest</option>
             </select>
           </div>
+          <label className="check-field">
+            <input
+              type="checkbox"
+              checked={hideNoise}
+              onChange={(e) => setHideNoise(e.target.checked)}
+            />
+            Hide early-smoke / unknown
+          </label>
         </div>
 
         {loading && <p className="muted">Loading…</p>}
         {error && <div className="alert alert-error">{error}</div>}
 
         {!loading && !error && (
-          <div className="table-wrap">
-            <table className="runs">
-              <thead>
-                <tr>
-                  <th>run_id</th>
-                  <th>author</th>
-                  <th>approach</th>
-                  <th>branch</th>
-                  <th>commit</th>
-                  <th>provider / model</th>
-                  <th>status</th>
-                  <th>weighted</th>
-                  <th>approach med</th>
-                  <th>calls</th>
-                  <th>wall s</th>
-                  <th>rating</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filtered.length === 0 && (
+          <>
+            <RunsCharts runs={filtered} onSelectRun={(id) => navigate(`/runs/${id}`)} />
+
+            <div className="table-wrap">
+              <table className="runs">
+                <thead>
                   <tr>
-                    <td colSpan={12} className="muted">
-                      No runs yet — add one from the Add run tab.
-                    </td>
+                    <th>run_id</th>
+                    <th>author</th>
+                    <th>approach</th>
+                    <th>branch</th>
+                    <th>commit</th>
+                    <th>provider / model</th>
+                    <th>status</th>
+                    <th>weighted</th>
+                    <th>approach med</th>
+                    <th>calls</th>
+                    <th>wall s</th>
+                    <th>rating</th>
                   </tr>
-                )}
-                {filtered.map((run) => {
-                  const exp = run.data.export;
-                  const key = approachKey(run);
-                  const st = exp?.harness?.status;
-                  return (
-                    <tr key={run.id} onClick={() => navigate(`/runs/${run.id}`)}>
-                      <td>{exp?.meta?.run_id || "—"}</td>
-                      <td>{run.person}</td>
-                      <td>{key}</td>
-                      <td>{run.data.git_branch || exp?.meta?.git_branch || "—"}</td>
-                      <td>{shortCommit(run.data.git_commit || exp?.meta?.git_commit)}</td>
-                      <td>
-                        {[exp?.meta?.provider, exp?.meta?.model].filter(Boolean).join(" / ") ||
-                          "—"}
+                </thead>
+                <tbody>
+                  {filtered.length === 0 && (
+                    <tr>
+                      <td colSpan={12} className="muted">
+                        No runs in this filter — loosen filters or Add run.
                       </td>
-                      <td>
-                        <span className={statusBadge(st)}>{st || "—"}</span>
-                      </td>
-                      <td>{formatNumber(weightedOf(run))}</td>
-                      <td>{formatNumber(medians.get(key) ?? null)}</td>
-                      <td>{exp?.harness?.model_calls ?? "—"}</td>
-                      <td>{formatNumber(exp?.efficiency?.wall_seconds)}</td>
-                      <td>{run.data.app_rating ?? "—"}</td>
                     </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
+                  )}
+                  {filtered.map((run) => {
+                    const exp = run.data.export;
+                    const key = approachKey(run);
+                    const st = exp?.harness?.status;
+                    return (
+                      <tr key={run.id} onClick={() => navigate(`/runs/${run.id}`)}>
+                        <td>{exp?.meta?.run_id || "—"}</td>
+                        <td>{run.person}</td>
+                        <td>{key}</td>
+                        <td>{run.data.git_branch || exp?.meta?.git_branch || "—"}</td>
+                        <td>{shortCommit(run.data.git_commit || exp?.meta?.git_commit)}</td>
+                        <td>
+                          {[exp?.meta?.provider, exp?.meta?.model].filter(Boolean).join(" / ") ||
+                            "—"}
+                        </td>
+                        <td>
+                          <span className={statusBadge(st)}>{st || "—"}</span>
+                        </td>
+                        <td>{formatNumber(weightedOf(run))}</td>
+                        <td>{formatNumber(chartMedians.get(key) ?? null)}</td>
+                        <td>{exp?.harness?.model_calls ?? "—"}</td>
+                        <td>{formatNumber(exp?.efficiency?.wall_seconds)}</td>
+                        <td>{run.data.app_rating ?? "—"}</td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </>
         )}
       </section>
     </div>
