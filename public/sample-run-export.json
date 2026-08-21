@@ -1,0 +1,77 @@
+{
+  "schema": "agentcofounder.run_export.v1",
+  "meta": {
+    "run_id": "2026-08-21T17-12-43-573Z",
+    "recorded_at": "2026-08-21T20:07:55.953Z",
+    "git_branch": "setup/measure",
+    "git_commit": "b7d488328c21f45eb3051f60a9c00fb65f79f3fe",
+    "approach": "base",
+    "provider": "zai",
+    "model": "glm-5.2"
+  },
+  "harness": {
+    "status": "success",
+    "summary": "A simple single-user home book library with add, list, and search.",
+    "implemented_features": [
+      "Add a book with title and author",
+      "List books",
+      "Search by title"
+    ],
+    "assumptions": [
+      "Single-user local app",
+      "No auth required"
+    ],
+    "tests_run": [
+      {
+        "command": "npm test",
+        "journey": "Add a complete book and see it in the list",
+        "result": "passed"
+      }
+    ],
+    "harness_checks": [
+      {
+        "command": "vitest run",
+        "journey": "Harness smoke checks",
+        "result": "passed"
+      }
+    ],
+    "model_calls": 24,
+    "input_tokens": 19266,
+    "output_tokens": 10187,
+    "cache_read_tokens": 241152,
+    "cache_write_tokens": 0,
+    "total_tokens": 270605,
+    "reasoning_tokens": 0,
+    "cost_total": 0,
+    "pi_exit_code": 0
+  },
+  "efficiency": {
+    "weighted_total": 73942.2,
+    "wall_seconds": 160.722,
+    "seconds_per_call": 6.697,
+    "time_to_final_green_s": 122.907,
+    "time_to_first_failing_test_s": null,
+    "npm_test_command_count": 4,
+    "auto_test_trigger_hits": 4,
+    "phase_heuristic": [
+      {
+        "phase": "build",
+        "call_count": 8,
+        "weighted_cost": 28847.8,
+        "share_of_total": 0.39
+      },
+      {
+        "phase": "test_debug",
+        "call_count": 10,
+        "weighted_cost": 29576.9,
+        "share_of_total": 0.4
+      },
+      {
+        "phase": "finalize",
+        "call_count": 6,
+        "weighted_cost": 15517.5,
+        "share_of_total": 0.21
+      }
+    ]
+  }
+}
