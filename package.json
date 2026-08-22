@@ -7,7 +7,10 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "oxlint",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "seed:runs": "python3 scripts/seed_runs_from_artifacts.py",
+    "seed:exp1-rtl": "python3 scripts/seed_runs_from_artifacts.py --exp1-rtl",
+    "backfill:classification": "python3 scripts/backfill_classification.py"
   },
   "dependencies": {
     "react": "^19.2.8",
