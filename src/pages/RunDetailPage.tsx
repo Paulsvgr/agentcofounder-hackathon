@@ -160,6 +160,20 @@ export function RunDetailPage() {
             <div className="value">{formatNumber(eff.post_green_verification_calls, 0)}</div>
           </div>
           <div className="stat">
+            <div className="label">RTL DOM leaks</div>
+            <div className="value">{formatNumber(exp?.efficiency?.rtl_dom_leak_failures, 0)}</div>
+          </div>
+          <div className="stat">
+            <div className="label">Multiple-element fails</div>
+            <div className="value">
+              {formatNumber(exp?.efficiency?.multiple_element_failures_total, 0)}
+            </div>
+          </div>
+          <div className="stat">
+            <div className="label">Query ambiguity</div>
+            <div className="value">{formatNumber(exp?.efficiency?.query_ambiguity_failures, 0)}</div>
+          </div>
+          <div className="stat">
             <div className="label">Manual build calls</div>
             <div className="value">{formatNumber(eff.manual_build_calls, 0)}</div>
           </div>

@@ -2,6 +2,7 @@
 """Seed hackathon runs API from exports + pilot.jsonl judgments."""
 from __future__ import annotations
 
+import argparse
 import json
 import os
 import sys
@@ -172,7 +173,71 @@ ENRICH: dict[str, dict] = {
         "rating": 2,
         "comment": "aborted TPM / RTL thrash",
     },
+    # Experiment 1 — RTL cleanup (Phase F)
+    "2026-08-22T11-17-34-089Z": {
+        "approach": "rtl-control-1",
+        "rating": 9,
+        "comment": "Experiment 1 · rtl-control · rep 1 · snowball · ~69k",
+    },
+    "2026-08-22T11-20-53-365Z": {
+        "approach": "rtl-control-2",
+        "rating": 9,
+        "comment": "Experiment 1 · rtl-control · rep 2 · snowball · ~76k",
+    },
+    "2026-08-22T11-24-02-704Z": {
+        "approach": "rtl-control-3",
+        "rating": 9,
+        "comment": "Experiment 1 · rtl-control · rep 3 · snowball · ~96k",
+    },
+    "2026-08-22T11-28-00-137Z": {
+        "approach": "rtl-control-4",
+        "rating": 9,
+        "comment": "Experiment 1 · rtl-control · rep 4 · snowball · ~157k",
+    },
+    "2026-08-22T11-33-28-491Z": {
+        "approach": "rtl-control-5",
+        "rating": 9,
+        "comment": "Experiment 1 · rtl-control · rep 5 · snowball · ~144k",
+    },
+    "2026-08-22T11-39-27-224Z": {
+        "approach": "rtl-cleanup-1",
+        "rating": 9,
+        "comment": "Experiment 1 · rtl-cleanup · rep 1 · snowball · ~101k",
+    },
+    "2026-08-22T11-43-19-823Z": {
+        "approach": "rtl-cleanup-2",
+        "rating": 9,
+        "comment": "Experiment 1 · rtl-cleanup · rep 2 · snowball · ~181k",
+    },
+    "2026-08-22T11-49-46-658Z": {
+        "approach": "rtl-cleanup-3",
+        "rating": 9,
+        "comment": "Experiment 1 · rtl-cleanup · rep 3 · snowball · ~179k",
+    },
+    "2026-08-22T11-56-19-753Z": {
+        "approach": "rtl-cleanup-4",
+        "rating": 9,
+        "comment": "Experiment 1 · rtl-cleanup · rep 4 · snowball · ~96k",
+    },
+    "2026-08-22T12-00-02-941Z": {
+        "approach": "rtl-cleanup-5",
+        "rating": 9,
+        "comment": "Experiment 1 · rtl-cleanup · rep 5 · snowball · ~183k",
+    },
 }
+
+EXP1_RTL_RUN_IDS = [
+    "2026-08-22T11-17-34-089Z",
+    "2026-08-22T11-20-53-365Z",
+    "2026-08-22T11-24-02-704Z",
+    "2026-08-22T11-28-00-137Z",
+    "2026-08-22T11-33-28-491Z",
+    "2026-08-22T11-39-27-224Z",
+    "2026-08-22T11-43-19-823Z",
+    "2026-08-22T11-49-46-658Z",
+    "2026-08-22T11-56-19-753Z",
+    "2026-08-22T12-00-02-941Z",
+]
 
 RATING_MAP = {"great": 9, "ok": 7, "broken": 2}
 
@@ -268,10 +333,37 @@ def post_run(payload: dict) -> tuple[int, dict | str]:
             return exc.code, raw
 
 
+def parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(description="Seed hackathon runs API from export JSON files.")
+    parser.add_argument(
+        "--only",
+        help="Comma-separated run_ids to seed (default: all collected exports)",
+    )
+    parser.add_argument(
+        "--exp1-rtl",
+        action="store_true",
+        help="Seed only Experiment 1 rtl-control + rtl-cleanup runs (10 ids)",
+    )
+    parser.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="Print payloads without POSTing",
+    )
+    return parser.parse_args()
+
+
 def main() -> int:
-    if not ACCESS_CODE:
+    args = parse_args()
+
+    if not args.dry_run and not ACCESS_CODE:
         print("Set HACKATHON_ACCESS_CODE", file=sys.stderr)
         return 1
+
+    only_ids: set[str] | None = None
+    if args.exp1_rtl:
+        only_ids = set(EXP1_RTL_RUN_IDS)
+    elif args.only:
+        only_ids = {part.strip() for part in args.only.split(",") if part.strip()}
 
     root = Path(
         os.environ.get(
@@ -286,7 +378,13 @@ def main() -> int:
 
     judgments = load_judgments(judgments_path)
     pastes = collect_pastes(exports, runs_dir)
-    print(f"pastes={len(pastes)} judgments={len(judgments)} api={API_BASE}")
+    if only_ids is not None:
+        missing = sorted(only_ids - set(pastes))
+        if missing:
+            print(f"warning: missing exports for {len(missing)} run_id(s): {', '.join(missing)}", file=sys.stderr)
+        pastes = {run_id: paste for run_id, paste in pastes.items() if run_id in only_ids}
+
+    print(f"pastes={len(pastes)} judgments={len(judgments)} api={API_BASE} dry_run={args.dry_run}")
 
     ok = 0
     fail = 0
@@ -318,9 +416,7 @@ def main() -> int:
                 rating = int(pr)
 
         comment = enrich.get("comment") or j.get("note") or ""
-        if j.get("label") and j["label"] not in comment:
-            # Keep pilot label visible when enrich didn't set a short comment
-            pass
+        run_comment = enrich.get("comment") or f"seeded from exports ({approach})"
 
         overrides = {
             "run_id": run_id,
@@ -350,8 +446,13 @@ def main() -> int:
             "overrides": {k: v for k, v in overrides.items() if v is not None},
             "app_rating": rating,
             "app_comment": comment,
-            "run_comment": f"seeded from pilot.jsonl / exports ({approach})",
+            "run_comment": run_comment,
         }
+
+        if args.dry_run:
+            print(f"DRY {run_id} -> {approach} rating={rating}")
+            ok += 1
+            continue
 
         status, body = post_run(payload)
         if status in (200, 201):

@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { CohortActionFlow } from "../components/CohortActionFlow";
-import { cohortLabelMap, STUDY_COHORT } from "../lib/cohortStudy";
+import { COHORT_PRESETS, resolveCohortPreset } from "../lib/cohortStudy";
 import { listRuns } from "../lib/api";
 import { shortRunId } from "../lib/actionFlow";
 import { loadClassificationManifest } from "../lib/classification";
@@ -10,11 +10,17 @@ import { hasActionFlow, type HackathonRunRecord } from "../types/runExport";
 
 export function CohortPage() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const presetId = searchParams.get("preset");
+  const preset = useMemo(() => resolveCohortPreset(presetId), [presetId]);
   const [runs, setRuns] = useState<HackathonRunRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const labels = useMemo(() => cohortLabelMap(), []);
+  const labels = useMemo(
+    () => new Map(preset.entries.map((c) => [c.run_id, c.label])),
+    [preset.entries],
+  );
 
   useEffect(() => {
     let cancelled = false;
@@ -44,11 +50,11 @@ export function CohortPage() {
       const id = run.data.export?.meta?.run_id || run.data.run_id;
       if (id) byRunId.set(id, run);
     }
-    return STUDY_COHORT.map((entry) => ({
+    return preset.entries.map((entry) => ({
       entry,
       run: byRunId.get(entry.run_id) ?? null,
     }));
-  }, [runs]);
+  }, [runs, preset.entries]);
 
   const matched = cohortRuns.filter((c) => c.run).map((c) => c.run!);
   const v2Count = matched.filter((r) => hasActionFlow(r.data.export)).length;
@@ -56,11 +62,21 @@ export function CohortPage() {
   return (
     <div className="stack page-center">
       <section className="panel">
-        <h2>7-run study cohort</h2>
-        <p className="muted lead">
-          Side-by-side action-flow comparison for baseline, auto-test floor, snowball runs, and
-          prime/autoverify arms. Highlighted segments: repair loop + extra verify.
-        </p>
+        <div className="row" style={{ marginBottom: "0.75rem", alignItems: "center" }}>
+          <h2 style={{ margin: 0 }}>{preset.title}</h2>
+          <div className="chips">
+            {Object.values(COHORT_PRESETS).map((p) => (
+              <Link
+                key={p.id}
+                to={p.id === "study" ? "/cohort" : `/cohort?preset=${p.id}`}
+                className={`chip${preset.id === p.id ? " active" : ""}`}
+              >
+                {p.id}
+              </Link>
+            ))}
+          </div>
+        </div>
+        <p className="muted lead">{preset.description}</p>
 
         {loading && <p className="muted">Loading…</p>}
         {error && <div className="alert alert-error">{error}</div>}
@@ -68,7 +84,7 @@ export function CohortPage() {
         {!loading && !error && (
           <>
             <p className="muted">
-              {matched.length} / {STUDY_COHORT.length} runs in DB · {v2Count} with v2 action_flow
+              {matched.length} / {preset.entries.length} runs in DB · {v2Count} with v2 action_flow
             </p>
 
             <div className="table-wrap">
@@ -79,7 +95,7 @@ export function CohortPage() {
                     <th>run_id</th>
                     <th>In DB</th>
                     <th>Schema</th>
-                    <th>weighted</th>
+                    <th className="num">weighted</th>
                     <th>Notes</th>
                   </tr>
                 </thead>
@@ -91,12 +107,12 @@ export function CohortPage() {
                       onClick={() => run && navigate(`/runs/${run.id}`)}
                     >
                       <td>{entry.label}</td>
-                      <td>{shortRunId(entry.run_id)}</td>
+                      <td className="mono">{shortRunId(entry.run_id)}</td>
                       <td>{run ? "yes" : "—"}</td>
                       <td>
                         {run?.data.export?.schema?.includes("v2") ? "v2" : run ? "v1" : "—"}
                       </td>
-                      <td>
+                      <td className="num">
                         {run
                           ? formatNumber(run.data.export?.efficiency?.weighted_total)
                           : "—"}
@@ -112,8 +128,7 @@ export function CohortPage() {
 
             <p className="muted">
               Paste v2 exports from <code>setup/measure</code> for missing runs, or load dev
-              fixtures from{" "}
-              <Link to="/add">Add run</Link>.
+              fixtures from <Link to="/add">Add run</Link>.
             </p>
           </>
         )}

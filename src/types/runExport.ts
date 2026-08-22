@@ -53,7 +53,7 @@ export type ActionSegment = {
   note: string | null;
 };
 
-export type ClassificationLine = "A" | "A-prime" | "B-prime" | "C" | "C-prime" | "D" | "unknown";
+export type ClassificationLine = "A" | "A-prime" | "B-prime" | "C" | "C-prime" | "D" | "F" | "unknown";
 
 export type ClassificationExperiment =
   | "baseline"
@@ -64,6 +64,8 @@ export type ClassificationExperiment =
   | "autoverify-owned"
   | "autoverify-gated"
   | "prime-comparison"
+  | "exp1-rtl-control"
+  | "exp1-rtl-cleanup"
   | "legacy"
   | "legacy-smoke"
   | "unknown";
@@ -100,6 +102,11 @@ export type RunExportEfficiency = {
   manual_build_calls?: number;
   test_reinspection_calls?: number;
   post_green_verification_calls?: number;
+  full_suite_test_calls?: number;
+  multiple_element_failures_total?: number;
+  rtl_dom_leak_failures?: number;
+  query_ambiguity_failures?: number;
+  harness_green_but_no_first_green?: boolean;
   auto_test_candidate_events?: number;
   auto_test_actual_runs?: number;
   action_flow?: ActionSegment[];

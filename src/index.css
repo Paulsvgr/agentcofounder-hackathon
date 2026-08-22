@@ -598,6 +598,15 @@ table.runs tbody tr:hover {
   font-size: 0.75rem;
   background: var(--bg-2);
   color: var(--text);
+  text-decoration: none;
+}
+
+.chip.active,
+a.chip.active {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  color: var(--text);
+  font-weight: 600;
 }
 
 .field-multi select {

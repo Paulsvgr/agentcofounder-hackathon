@@ -5,7 +5,7 @@ import type {
   RunHuman,
 } from "../types/runExport";
 
-const LINES = ["A", "A-prime", "B-prime", "C", "C-prime", "D", "unknown"] as const;
+const LINES = ["A", "A-prime", "B-prime", "C", "C-prime", "D", "F", "unknown"] as const;
 const EXPERIMENTS = [
   "baseline",
   "no-dev-server-prompt",
@@ -15,6 +15,8 @@ const EXPERIMENTS = [
   "autoverify-owned",
   "autoverify-gated",
   "prime-comparison",
+  "exp1-rtl-control",
+  "exp1-rtl-cleanup",
   "legacy",
   "legacy-smoke",
   "unknown",
@@ -56,12 +58,14 @@ function parseRunIndex(approach: string): number | null {
 function lineFromApproach(approach: string): RunClassification["line"] {
   if (!approach) return "unknown";
   const low = approach.toLowerCase();
+  if (low.startsWith("rtl-control") || low.startsWith("rtl-cleanup")) return "F";
   if (low.startsWith("a-prime")) return "A-prime";
   if (low.startsWith("b-prime")) return "B-prime";
   if (low.startsWith("c-prime")) return "C-prime";
   if (low.startsWith("a-")) return "A";
   if (approach === "C-original" || low.startsWith("c-")) return "C";
   if (low.includes("run-d") || approach === "D" || approach === "run-d / D") return "D";
+  if (approach.startsWith("rtl-")) return "F";
   return "unknown";
 }
 
@@ -70,6 +74,9 @@ function experimentFromApproach(
   gitBranch: string | null | undefined,
 ): RunClassification["experiment"] {
   if (!approach) return gitBranch === "exp/auto-verify" ? "unknown" : "unknown";
+  const low = approach.toLowerCase();
+  if (low.startsWith("rtl-control")) return "exp1-rtl-control";
+  if (low.startsWith("rtl-cleanup")) return "exp1-rtl-cleanup";
   if (approach.startsWith("A-autoverify-owned-gated") || approach.toLowerCase().includes("gated")) {
     return "autoverify-gated";
   }
