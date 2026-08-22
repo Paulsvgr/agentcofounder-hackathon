@@ -5,9 +5,16 @@
     "recorded_at": "2026-08-21T20:07:55.953Z",
     "git_branch": "setup/measure",
     "git_commit": "b7d488328c21f45eb3051f60a9c00fb65f79f3fe",
-    "approach": "base",
+    "approach": "A-baseline-1",
     "provider": "zai",
-    "model": "glm-5.2"
+    "model": "glm-5.2",
+    "classification": {
+      "line": "A",
+      "experiment": "baseline",
+      "run_index": 1,
+      "display_label": "A · baseline · run 1",
+      "legacy_approach": "A-baseline-1"
+    }
   },
   "harness": {
     "status": "success",

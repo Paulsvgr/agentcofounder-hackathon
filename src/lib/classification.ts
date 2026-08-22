@@ -109,6 +109,11 @@ function shouldExclude(experiment: string, runComment: string, appComment: strin
 
 export function deriveClassification(run: HackathonRunRecord): RunClassification {
   const meta = run.data.export?.meta;
+  const exportCls = meta?.classification;
+  if (exportCls?.display_label) {
+    return exportCls;
+  }
+
   const approach = (meta?.approach || run.data.approach_kind || "").trim();
   const gitBranch = run.data.git_branch || meta?.git_branch;
   const gitCommit = run.data.git_commit || meta?.git_commit;

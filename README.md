@@ -56,6 +56,8 @@ Sample: [`public/sample-run-export.json`](./public/sample-run-export.json)
 
 Human fields (`app_rating`, `app_comment`, `run_comment`) are UI/DB only — not in the export file.
 
+Harness export (on `setup/measure`) should set structured `--approach` labels (e.g. `A-baseline-1`) and emit `meta.classification`. See [`scripts/harness-export-run.patch.md`](./scripts/harness-export-run.patch.md).
+
 In the app, open **How to export** (`/how-to`) for the full harness steps (`setup/measure` → analyze → `export:run`).
 
 ## Authors

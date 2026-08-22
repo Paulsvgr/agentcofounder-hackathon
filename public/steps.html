@@ -731,12 +731,20 @@ npm ci --ignore-scripts   # if first time on this branch</code></pre>
 # …wait until finished…
 ls -1dt artifacts/runs/*/ | head -1    # note the run-id folder name
 npm run analyze -- &lt;run-id&gt;
-npm run export:run -- &lt;run-id&gt; --approach base</code></pre>
+npm run export:run -- &lt;run-id&gt; --approach A-baseline-1</code></pre>
           <ul>
             <li>Paste file: <code>artifacts/exports/&lt;run-id&gt;.json</code></li>
             <li>Schema must be <code>agentcofounder.run_export.v1</code></li>
-            <li><code>--approach</code> = label for comparisons (e.g. <code>base</code>, <code>harness/paul</code>). Optional: <code>RUN_APPROACH=…</code></li>
-            <li>Ratings / comments are <strong>not</strong> in that file — enter them in the runs app after paste</li>
+            <li>
+              <code>--approach</code> = experiment arm label — use structured names so the runs app can filter by
+              <strong>Line</strong> / <strong>Experiment</strong> (e.g.
+              <code>A-baseline-1</code>, <code>A-autoverify-owned-2</code>, <code>A-prompt-3</code>).
+              Avoid generic <code>base</code>. Optional env: <code>RUN_APPROACH=…</code>
+            </li>
+            <li>
+              New exports include <code>meta.classification</code> (line, experiment, display label) when export tooling
+              is up to date — ratings / comments / exclude flags are still entered in the runs app only
+            </li>
           </ul>
         </div>
       </article>
@@ -752,7 +760,7 @@ npm run export:run -- &lt;run-id&gt; --approach base</code></pre>
             <li>Add app rating (0–10), app comment, run comment</li>
             <li>Enter the shared access key → Save</li>
           </ol>
-          <p>Compare on the <strong>Runs</strong> tab (filter by approach / branch / author). Full plan + this export section also ships inside the app as <code>/steps.html</code>.</p>
+          <p>Compare on the <strong>Runs</strong> tab (filter by line / experiment / branch / author). Full plan + this export section also ships inside the app as <code>/steps.html</code>.</p>
         </div>
       </article>
     </section>

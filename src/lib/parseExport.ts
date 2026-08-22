@@ -135,6 +135,9 @@ function normalizeV1(
     approach: typeof metaIn.approach === "string" ? metaIn.approach : null,
     provider: typeof metaIn.provider === "string" ? metaIn.provider : null,
     model: typeof metaIn.model === "string" ? metaIn.model : null,
+    classification: isObject(metaIn.classification)
+      ? (metaIn.classification as RunExport["meta"]["classification"])
+      : undefined,
   };
   meta = applyOverrides(meta, overrides);
 

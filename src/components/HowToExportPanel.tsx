@@ -24,7 +24,7 @@ npm ci --ignore-scripts   # if first time on this branch`}</pre>
 # …wait until finished…
 ls -1dt artifacts/runs/*/ | head -1    # note the run-id folder name
 npm run analyze -- <run-id>
-npm run export:run -- <run-id> --approach base`}</pre>
+npm run export:run -- <run-id> --approach A-baseline-1`}</pre>
 
         <ul className="list-plain">
           <li>
@@ -37,12 +37,13 @@ npm run export:run -- <run-id> --approach base`}</pre>
             &amp; phase breakdown stay empty)
           </li>
           <li>
-            <code>--approach</code> = label for comparisons (e.g. <code>base</code>,{" "}
-            <code>harness/paul</code>). Optional: <code>RUN_APPROACH=…</code>
+            <code>--approach</code> = experiment arm (e.g. <code>A-baseline-1</code>,{" "}
+            <code>A-autoverify-owned-2</code>) — not generic <code>base</code>. Optional:{" "}
+            <code>RUN_APPROACH=…</code>
           </li>
           <li>
-            Ratings / comments are <strong>not</strong> in that file — enter them in this app
-            after paste
+            Up-to-date export tooling adds <code>meta.classification</code> for Method filters;
+            ratings / comments / exclude flags are entered in this app after paste
           </li>
           <li>Export is manual (not automatic after challenge)</li>
         </ul>

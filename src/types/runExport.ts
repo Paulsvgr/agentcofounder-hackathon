@@ -60,6 +60,8 @@ export type RunExport = {
     approach: string | null;
     provider: string | null;
     model: string | null;
+    /** Set by harness export:run from RUN_APPROACH / --approach (machine fields only). */
+    classification?: RunClassification;
   };
   harness: {
     status: string;
