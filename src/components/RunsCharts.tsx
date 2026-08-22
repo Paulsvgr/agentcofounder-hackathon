@@ -73,12 +73,16 @@ export function RunsCharts({ runs, onSelectRun }: Props) {
   const { theme } = useTheme();
   const ct = chartTheme(theme === "dark");
 
+  // Unrated runs still belong on this chart — plot them on a dedicated n/a row.
+  const UNRATED_Y = -0.8;
+
   const scatter = useMemo(() => {
     return runs
       .map((run) => {
         const w = weightedOf(run);
-        const rating = run.data.app_rating ?? run.data.human?.app_rating;
-        if (w === null || rating === null || rating === undefined) return null;
+        if (w === null) return null;
+        const rawRating = run.data.app_rating ?? run.data.human?.app_rating;
+        const rated = rawRating !== null && rawRating !== undefined;
         const experiment = experimentKey(run);
         const label = methodLabel(run);
         return {
@@ -87,7 +91,9 @@ export function RunsCharts({ runs, onSelectRun }: Props) {
           approach: experiment,
           label,
           weighted: w,
-          rating,
+          rating: rated ? Number(rawRating) : UNRATED_Y,
+          rated,
+          ratingLabel: rated ? String(rawRating) : "n/a",
           fill: colorFor(experiment),
         };
       })
@@ -138,7 +144,9 @@ export function RunsCharts({ runs, onSelectRun }: Props) {
     <div className="charts-grid">
       <div className="chart-card chart-card-wide">
         <h3>Weighted vs rating</h3>
-        <p className="chart-hint">Lower weighted + higher rating is better. Click a point.</p>
+        <p className="chart-hint">
+          Lower weighted + higher rating is better. Unrated runs sit on the n/a row. Click a point.
+        </p>
         <div className="chart-box">
           <ResponsiveContainer width="100%" height={320}>
             <ScatterChart margin={{ top: 12, right: 20, bottom: 28, left: 12 }}>
@@ -163,9 +171,11 @@ export function RunsCharts({ runs, onSelectRun }: Props) {
                 type="number"
                 dataKey="rating"
                 name="rating"
-                domain={[0, 10]}
+                domain={[-1.5, 10]}
+                ticks={[-0.8, 0, 2, 4, 6, 8, 10]}
                 tick={ct.tick}
                 stroke={ct.axis}
+                tickFormatter={(v) => (Number(v) < 0 ? "n/a" : String(v))}
                 label={{
                   value: "app rating",
                   angle: -90,
@@ -181,10 +191,16 @@ export function RunsCharts({ runs, onSelectRun }: Props) {
                 contentStyle={ct.tooltip}
                 itemStyle={{ color: ct.tooltip.color }}
                 labelStyle={{ color: ct.tooltip.color, fontWeight: 700 }}
-                formatter={(value, name) => [
-                  typeof value === "number" ? formatNumber(value) : String(value ?? ""),
-                  String(name),
-                ]}
+                formatter={(value, name, item) => {
+                  const p = item?.payload as { rated?: boolean; ratingLabel?: string } | undefined;
+                  if (String(name) === "rating") {
+                    return [p?.ratingLabel ?? String(value ?? ""), "rating"];
+                  }
+                  return [
+                    typeof value === "number" ? formatNumber(value) : String(value ?? ""),
+                    String(name),
+                  ];
+                }}
                 labelFormatter={(_, payload) => {
                   const p = payload?.[0]?.payload as
                     | { label?: string; runId?: string }
@@ -202,9 +218,9 @@ export function RunsCharts({ runs, onSelectRun }: Props) {
                 {scatter.map((p) => (
                   <Cell
                     key={p.id}
-                    fill={p.fill}
-                    stroke={ct.pointStroke}
-                    strokeWidth={1}
+                    fill={p.rated ? p.fill : "transparent"}
+                    stroke={p.fill}
+                    strokeWidth={p.rated ? 1 : 2}
                     cursor="pointer"
                   />
                 ))}
