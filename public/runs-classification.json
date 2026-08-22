@@ -1,6 +1,6 @@
 {
   "schema": "agentcofounder.runs_classification.v1",
-  "generated_at": "2026-08-22T12:46:22.365715Z",
+  "generated_at": "2026-08-22T13:13:35.293957Z",
   "description": "Canonical method labels for hackathon runs UI backfill. Overlay by run_id on ingest; wins over derived meta.approach.",
   "taxonomy": {
     "line": [
@@ -24,6 +24,8 @@
       "prime-comparison",
       "exp1-rtl-control",
       "exp1-rtl-cleanup",
+      "exp2-stop-control",
+      "exp2-stop-treatment",
       "legacy",
       "legacy-smoke",
       "unknown"
@@ -31,7 +33,7 @@
   },
   "derivation_rules": [
     "If run_id exists in this manifest, use classification + human fields as canonical.",
-    "Else derive experiment from meta.approach prefix: A-autoverify-owned* \u2192 autoverify-owned, A-autoverify-supplement* \u2192 autoverify-supplement, A-prompt* \u2192 no-dev-server-prompt, A-autotest* \u2192 auto-test, A-baseline* / A-raw* \u2192 baseline, rtl-control* \u2192 exp1-rtl-control, rtl-cleanup* \u2192 exp1-rtl-cleanup.",
+    "Else derive experiment from meta.approach prefix: A-autoverify-owned* \u2192 autoverify-owned, A-autoverify-supplement* \u2192 autoverify-supplement, A-prompt* \u2192 no-dev-server-prompt, A-autotest* \u2192 auto-test, A-baseline* / A-raw* \u2192 baseline, rtl-control* \u2192 exp1-rtl-control, rtl-cleanup* \u2192 exp1-rtl-cleanup, stop-control* \u2192 exp2-stop-control, stop-treatment* \u2192 exp2-stop-treatment.",
     "Else if git_branch === exp/auto-verify, experiment = autoverify-unknown.",
     "Else if git_branch === main && git_commit starts with d0f0b49, line = A, experiment = baseline.",
     "Parse run_index from trailing -N on approach string when present.",
@@ -1137,7 +1139,7 @@
       },
       "source": {
         "git_branch": "setup/measure",
-        "git_commit": "692981ae32c89bcc8ed44deac6a0d6433bfa00ca",
+        "git_commit": "b07c4834cf1506265b1fd06ed988dc2116704eae",
         "provider": "zai",
         "model": "glm-5.2",
         "harness_status": "success",
@@ -1164,7 +1166,7 @@
       },
       "source": {
         "git_branch": "setup/measure",
-        "git_commit": "692981ae32c89bcc8ed44deac6a0d6433bfa00ca",
+        "git_commit": "b07c4834cf1506265b1fd06ed988dc2116704eae",
         "provider": "zai",
         "model": "glm-5.2",
         "harness_status": "success",
@@ -1191,7 +1193,7 @@
       },
       "source": {
         "git_branch": "setup/measure",
-        "git_commit": "692981ae32c89bcc8ed44deac6a0d6433bfa00ca",
+        "git_commit": "b07c4834cf1506265b1fd06ed988dc2116704eae",
         "provider": "zai",
         "model": "glm-5.2",
         "harness_status": "success",
@@ -1218,7 +1220,7 @@
       },
       "source": {
         "git_branch": "setup/measure",
-        "git_commit": "692981ae32c89bcc8ed44deac6a0d6433bfa00ca",
+        "git_commit": "b07c4834cf1506265b1fd06ed988dc2116704eae",
         "provider": "zai",
         "model": "glm-5.2",
         "harness_status": "success",
@@ -1245,7 +1247,7 @@
       },
       "source": {
         "git_branch": "setup/measure",
-        "git_commit": "692981ae32c89bcc8ed44deac6a0d6433bfa00ca",
+        "git_commit": "b07c4834cf1506265b1fd06ed988dc2116704eae",
         "provider": "zai",
         "model": "glm-5.2",
         "harness_status": "success",
@@ -1272,7 +1274,7 @@
       },
       "source": {
         "git_branch": "setup/measure",
-        "git_commit": "692981ae32c89bcc8ed44deac6a0d6433bfa00ca",
+        "git_commit": "b07c4834cf1506265b1fd06ed988dc2116704eae",
         "provider": "zai",
         "model": "glm-5.2",
         "harness_status": "success",
@@ -1299,7 +1301,7 @@
       },
       "source": {
         "git_branch": "setup/measure",
-        "git_commit": "692981ae32c89bcc8ed44deac6a0d6433bfa00ca",
+        "git_commit": "b07c4834cf1506265b1fd06ed988dc2116704eae",
         "provider": "zai",
         "model": "glm-5.2",
         "harness_status": "success",
@@ -1326,7 +1328,7 @@
       },
       "source": {
         "git_branch": "setup/measure",
-        "git_commit": "692981ae32c89bcc8ed44deac6a0d6433bfa00ca",
+        "git_commit": "b07c4834cf1506265b1fd06ed988dc2116704eae",
         "provider": "zai",
         "model": "glm-5.2",
         "harness_status": "success",
@@ -1353,7 +1355,7 @@
       },
       "source": {
         "git_branch": "setup/measure",
-        "git_commit": "692981ae32c89bcc8ed44deac6a0d6433bfa00ca",
+        "git_commit": "b07c4834cf1506265b1fd06ed988dc2116704eae",
         "provider": "zai",
         "model": "glm-5.2",
         "harness_status": "success",
@@ -1380,12 +1382,39 @@
       },
       "source": {
         "git_branch": "setup/measure",
-        "git_commit": "692981ae32c89bcc8ed44deac6a0d6433bfa00ca",
+        "git_commit": "b07c4834cf1506265b1fd06ed988dc2116704eae",
         "provider": "zai",
         "model": "glm-5.2",
         "harness_status": "success",
         "weighted_total": 183138,
         "model_calls": 49
+      }
+    },
+    "2026-08-22T13-01-28-141Z": {
+      "classification": {
+        "line": "F",
+        "experiment": "exp2-stop-treatment",
+        "run_index": 1,
+        "display_label": "F \u00b7 exp2 stop treatment \u00b7 run 1",
+        "legacy_approach": "stop-treatment-1"
+      },
+      "human": {
+        "app_rating": null,
+        "run_comment": null
+      },
+      "flags": {
+        "exclude_from_ranking": false,
+        "hide_early_smoke": false,
+        "include_in_efficiency_compare": true
+      },
+      "source": {
+        "git_branch": "setup/measure",
+        "git_commit": "b07c4834cf1506265b1fd06ed988dc2116704eae",
+        "provider": "zai",
+        "model": "glm-5.2",
+        "harness_status": "success",
+        "weighted_total": 114871,
+        "model_calls": 31
       }
     }
   }
