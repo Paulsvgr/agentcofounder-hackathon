@@ -74,6 +74,7 @@ Or from this repo after exports exist on WSL:
 ```bash
 npm run seed:exp1-rtl
 npm run backfill:classification
+npm run links:runs -- 2026-08-22T11-17-34-089Z   # lookup /runs/<uuid> without re-seeding
 ```
 
 ## Authors

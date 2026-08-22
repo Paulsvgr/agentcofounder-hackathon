@@ -15,6 +15,9 @@ API_BASE = os.environ.get(
 ).rstrip("/")
 ACCESS_CODE = os.environ.get("HACKATHON_ACCESS_CODE", "")
 AUTHOR = os.environ.get("HACKATHON_AUTHOR", "paul")
+FRONTEND_BASE = os.environ.get(
+    "FRONTEND_BASE", "https://agentcofounder-hackathon.vercel.app"
+).rstrip("/")
 
 RUN_EXPORT_SCHEMAS = (
     "agentcofounder.run_export.v1",
@@ -333,6 +336,10 @@ def post_run(payload: dict) -> tuple[int, dict | str]:
             return exc.code, raw
 
 
+def frontend_url(uuid: str) -> str:
+    return f"{FRONTEND_BASE}/runs/{uuid}"
+
+
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Seed hackathon runs API from export JSON files.")
     parser.add_argument(
@@ -457,8 +464,10 @@ def main() -> int:
         status, body = post_run(payload)
         if status in (200, 201):
             ok += 1
-            rid = body.get("data", {}).get("run_id") if isinstance(body, dict) else ""
+            uuid = body.get("id") if isinstance(body, dict) else None
             print(f"OK {status} {run_id} -> {approach} rating={rating}")
+            if uuid:
+                print(f"    view: {frontend_url(str(uuid))}")
         else:
             fail += 1
             print(f"FAIL {status} {run_id}: {body}", file=sys.stderr)

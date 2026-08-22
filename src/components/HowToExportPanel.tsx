@@ -54,6 +54,11 @@ export HACKATHON_AUTHOR=paul
 npm run publish:run -- <run-id> --approach rtl-control-1
 npm run publish:runs -- --exp1-rtl   # all Experiment 1 reps`}</pre>
         <p style={{ margin: 0 }}>
+          After publish, each run prints a <strong>view:</strong> link (
+          <code>agentcofounder-hackathon.vercel.app/runs/&lt;uuid&gt;</code>). Lookup anytime:{" "}
+          <code>npm run links:runs -- &lt;run-id&gt;</code>
+        </p>
+        <p style={{ margin: 0 }}>
           Or from this repo: <code>npm run seed:exp1-rtl</code> then{" "}
           <code>npm run backfill:classification</code> (reads exports on WSL via{" "}
           <code>AGENTCOFOUNDER_ROOT</code>).

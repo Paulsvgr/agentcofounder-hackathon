@@ -773,6 +773,10 @@ npm run publish:runs -- --exp1-rtl</code></pre>
             <code>publish:runs</code> calls GreenCastle <code>seed_runs_from_artifacts.py</code> then
             <code>backfill_classification.py</code>. Re-running is safe (upsert by <code>run_id</code>).
             Set <code>RUNS_APP_ROOT</code> if the frontend repo is not at the default Windows mount path.
+            After publish, scripts print a <strong>view:</strong> link per run (
+            <code>agentcofounder-hackathon.vercel.app/runs/&lt;uuid&gt;</code>).
+            Lookup: <code>python3 scripts/print-run-frontend-links.py &lt;run-id&gt;</code> (harness) or
+            <code>npm run links:runs -- &lt;run-id&gt;</code> (runs app). Optional <code>FRONTEND_BASE</code>.
           </p>
           <p>
             Compare on <strong>Runs</strong> (filter by line / experiment / branch) or
