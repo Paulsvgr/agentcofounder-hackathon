@@ -1,26 +1,32 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { CohortActionFlow } from "../components/CohortActionFlow";
-import { COHORT_PRESETS, resolveCohortPreset } from "../lib/cohortStudy";
+import {
+  COHORT_PRESETS,
+  cohortLabelMap,
+  type CohortPreset,
+} from "../lib/cohortStudy";
 import { listRuns } from "../lib/api";
 import { shortRunId } from "../lib/actionFlow";
 import { loadClassificationManifest } from "../lib/classification";
 import { formatNumber } from "../lib/stats";
 import { hasActionFlow, type HackathonRunRecord } from "../types/runExport";
 
+function parsePreset(value: string | null): CohortPreset {
+  return value === "exp1-rtl" ? "exp1-rtl" : "study";
+}
+
 export function CohortPage() {
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
-  const presetId = searchParams.get("preset");
-  const preset = useMemo(() => resolveCohortPreset(presetId), [presetId]);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const preset = parsePreset(searchParams.get("preset"));
+  const config = COHORT_PRESETS[preset];
+
   const [runs, setRuns] = useState<HackathonRunRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const labels = useMemo(
-    () => new Map(preset.entries.map((c) => [c.run_id, c.label])),
-    [preset.entries],
-  );
+  const labels = useMemo(() => cohortLabelMap(preset), [preset]);
 
   useEffect(() => {
     let cancelled = false;
@@ -50,11 +56,11 @@ export function CohortPage() {
       const id = run.data.export?.meta?.run_id || run.data.run_id;
       if (id) byRunId.set(id, run);
     }
-    return preset.entries.map((entry) => ({
+    return config.entries.map((entry) => ({
       entry,
       run: byRunId.get(entry.run_id) ?? null,
     }));
-  }, [runs, preset.entries]);
+  }, [runs, config.entries]);
 
   const matched = cohortRuns.filter((c) => c.run).map((c) => c.run!);
   const v2Count = matched.filter((r) => hasActionFlow(r.data.export)).length;
@@ -62,21 +68,28 @@ export function CohortPage() {
   return (
     <div className="stack page-center">
       <section className="panel">
-        <div className="row" style={{ marginBottom: "0.75rem", alignItems: "center" }}>
-          <h2 style={{ margin: 0 }}>{preset.title}</h2>
-          <div className="chips">
-            {Object.values(COHORT_PRESETS).map((p) => (
-              <Link
-                key={p.id}
-                to={p.id === "study" ? "/cohort" : `/cohort?preset=${p.id}`}
-                className={`chip${preset.id === p.id ? " active" : ""}`}
-              >
-                {p.id}
-              </Link>
-            ))}
+        <div className="detail-head">
+          <div>
+            <h2>{config.title}</h2>
+            <p className="muted lead">{config.description}</p>
+          </div>
+          <div className="detail-badges">
+            <button
+              type="button"
+              className={preset === "study" ? "badge badge-ok" : "badge"}
+              onClick={() => setSearchParams({})}
+            >
+              Study (7)
+            </button>
+            <button
+              type="button"
+              className={preset === "exp1-rtl" ? "badge badge-ok" : "badge"}
+              onClick={() => setSearchParams({ preset: "exp1-rtl" })}
+            >
+              Exp1 RTL (10)
+            </button>
           </div>
         </div>
-        <p className="muted lead">{preset.description}</p>
 
         {loading && <p className="muted">Loading…</p>}
         {error && <div className="alert alert-error">{error}</div>}
@@ -84,7 +97,8 @@ export function CohortPage() {
         {!loading && !error && (
           <>
             <p className="muted">
-              {matched.length} / {preset.entries.length} runs in DB · {v2Count} with v2 action_flow
+              {matched.length} / {config.entries.length} runs in DB · {v2Count} with v2
+              action_flow
             </p>
 
             <div className="table-wrap">
@@ -95,7 +109,7 @@ export function CohortPage() {
                     <th>run_id</th>
                     <th>In DB</th>
                     <th>Schema</th>
-                    <th className="num">weighted</th>
+                    <th>weighted</th>
                     <th>Notes</th>
                   </tr>
                 </thead>
@@ -107,12 +121,12 @@ export function CohortPage() {
                       onClick={() => run && navigate(`/runs/${run.id}`)}
                     >
                       <td>{entry.label}</td>
-                      <td className="mono">{shortRunId(entry.run_id)}</td>
+                      <td>{shortRunId(entry.run_id)}</td>
                       <td>{run ? "yes" : "—"}</td>
                       <td>
                         {run?.data.export?.schema?.includes("v2") ? "v2" : run ? "v1" : "—"}
                       </td>
-                      <td className="num">
+                      <td>
                         {run
                           ? formatNumber(run.data.export?.efficiency?.weighted_total)
                           : "—"}
@@ -127,8 +141,9 @@ export function CohortPage() {
             <CohortActionFlow runs={matched} labels={labels} />
 
             <p className="muted">
-              Paste v2 exports from <code>setup/measure</code> for missing runs, or load dev
-              fixtures from <Link to="/add">Add run</Link>.
+              Paste v2 exports from <code>setup/measure</code> for missing runs, or seed via{" "}
+              <code>scripts/seed_runs_from_artifacts.py --only …</code>.{" "}
+              <Link to="/add">Add run</Link>
             </p>
           </>
         )}

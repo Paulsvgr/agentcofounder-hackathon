@@ -1,20 +1,5 @@
-/** Preset cohorts for side-by-side action-flow comparison. */
-
-export type CohortEntry = {
-  label: string;
-  run_id: string;
-  notes: string;
-};
-
-export type CohortPreset = {
-  id: string;
-  title: string;
-  description: string;
-  entries: CohortEntry[];
-};
-
-/** Original 7-run study (baseline, autotest floor, snowball, autoverify, A-prime). */
-export const STUDY_COHORT: CohortEntry[] = [
+/** 7-run study cohort for side-by-side action-flow comparison. */
+export const STUDY_COHORT: { label: string; run_id: string; notes: string }[] = [
   {
     label: "A-baseline-1",
     run_id: "2026-08-21T17-12-43-573Z",
@@ -52,98 +37,89 @@ export const STUDY_COHORT: CohortEntry[] = [
   },
 ];
 
-/** Experiment 1 — RTL cleanup matched cohort (5 control + 5 treatment). */
-export const EXP1_RTL_COHORT: CohortEntry[] = [
+/** Experiment 1 — RTL cleanup (5 control + 5 treatment at BASE_SHA). */
+export const EXP1_RTL_COHORT: { label: string; run_id: string; notes: string }[] = [
   {
     label: "rtl-control-1",
     run_id: "2026-08-22T11-17-34-089Z",
-    notes: "control ~69k, 17 calls; snowball",
+    notes: "snowball · ~69k · repair 5",
   },
   {
     label: "rtl-control-2",
     run_id: "2026-08-22T11-20-53-365Z",
-    notes: "control ~76k, 25 calls; snowball",
+    notes: "snowball · ~76k · repair 12",
   },
   {
     label: "rtl-control-3",
     run_id: "2026-08-22T11-24-02-704Z",
-    notes: "control ~96k, 26 calls; snowball",
+    notes: "snowball · ~96k · repair 10",
   },
   {
     label: "rtl-control-4",
     run_id: "2026-08-22T11-28-00-137Z",
-    notes: "control ~157k, 43 calls; snowball",
+    notes: "snowball · ~157k · repair 20",
   },
   {
     label: "rtl-control-5",
     run_id: "2026-08-22T11-33-28-491Z",
-    notes: "control ~144k, 43 calls; snowball",
+    notes: "snowball · ~144k · repair 25",
   },
   {
     label: "rtl-cleanup-1",
     run_id: "2026-08-22T11-39-27-224Z",
-    notes: "treatment ~101k, 35 calls; snowball",
+    notes: "snowball · ~101k · treatment",
   },
   {
     label: "rtl-cleanup-2",
     run_id: "2026-08-22T11-43-19-823Z",
-    notes: "treatment ~181k, 48 calls; snowball",
+    notes: "snowball · ~181k · repair 29",
   },
   {
     label: "rtl-cleanup-3",
     run_id: "2026-08-22T11-49-46-658Z",
-    notes: "treatment ~179k, 44 calls; snowball",
+    notes: "snowball · ~179k · repair 13",
   },
   {
     label: "rtl-cleanup-4",
     run_id: "2026-08-22T11-56-19-753Z",
-    notes: "treatment ~96k, 31 calls; snowball",
+    notes: "snowball · ~96k · treatment",
   },
   {
     label: "rtl-cleanup-5",
     run_id: "2026-08-22T12-00-02-941Z",
-    notes: "treatment ~183k, 49 calls; snowball",
+    notes: "snowball · ~183k · repair 14",
   },
 ];
 
-export const COHORT_PRESETS: Record<string, CohortPreset> = {
+export type CohortPreset = "study" | "exp1-rtl";
+
+export const COHORT_PRESETS: Record<
+  CohortPreset,
+  { title: string; description: string; entries: typeof STUDY_COHORT }
+> = {
   study: {
-    id: "study",
     title: "7-run study cohort",
     description:
-      "Side-by-side action-flow comparison for baseline, auto-test floor, snowball runs, and prime/autoverify arms. Highlighted segments: repair loop + extra verify.",
+      "Baseline, auto-test floor, snowball runs, and prime/autoverify arms. Highlighted: repair loop + extra verify.",
     entries: STUDY_COHORT,
   },
   "exp1-rtl": {
-    id: "exp1-rtl",
     title: "Experiment 1 — RTL cleanup",
     description:
-      "Matched cohort: rtl-control (no afterEach cleanup) vs rtl-cleanup (+ 3-line setup.ts seed). All 10 harness-green; 0/5 clean, 5/5 snowball both arms. Verdict: KEEP cleanup — mechanism counter inconclusive; do not claim token savings.",
+      "Matched 5+5 cohort at BASE_SHA. Verdict: KEEP cleanup; mechanism counter inconclusive (0 classified DOM leaks).",
     entries: EXP1_RTL_COHORT,
   },
 };
 
-export function resolveCohortPreset(presetId: string | null | undefined): CohortPreset {
-  if (presetId && COHORT_PRESETS[presetId]) {
-    return COHORT_PRESETS[presetId]!;
-  }
-  return COHORT_PRESETS.study!;
+export function cohortLabelMap(preset: CohortPreset = "study"): Map<string, string> {
+  return new Map(COHORT_PRESETS[preset].entries.map((c) => [c.run_id, c.label]));
 }
 
-export function cohortLabelMap(entries: CohortEntry[]): Map<string, string> {
-  return new Map(entries.map((c) => [c.run_id, c.label]));
+export function cohortRunIds(preset: CohortPreset = "study"): Set<string> {
+  return new Set(COHORT_PRESETS[preset].entries.map((c) => c.run_id));
 }
 
-export function cohortRunIds(entries: CohortEntry[]): Set<string> {
-  return new Set(entries.map((c) => c.run_id));
-}
-
-/** @deprecated Use resolveCohortPreset().entries */
-export function cohortLabelMapLegacy(): Map<string, string> {
-  return cohortLabelMap(STUDY_COHORT);
-}
-
-/** @deprecated Use resolveCohortPreset().entries */
-export function cohortRunIdsLegacy(): Set<string> {
-  return cohortRunIds(STUDY_COHORT);
+/** @deprecated use cohortLabelMap("study") */
+export function studyCohortLabelMap(): Map<string, string> {
+  return cohortLabelMap("study");
 }
