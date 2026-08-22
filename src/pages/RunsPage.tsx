@@ -304,18 +304,18 @@ export function RunsPage() {
               <table className="runs">
                 <thead>
                   <tr>
-                    <th>run_id</th>
+                    <th className="mono">run_id</th>
                     <th>author</th>
                     <th>method</th>
                     <th>branch</th>
-                    <th>commit</th>
+                    <th className="mono">commit</th>
                     <th>provider / model</th>
                     <th>status</th>
-                    <th>weighted</th>
-                    <th>exp. med</th>
-                    <th>calls</th>
-                    <th>wall s</th>
-                    <th>rating</th>
+                    <th className="num">weighted</th>
+                    <th className="num">exp. med</th>
+                    <th className="num">calls</th>
+                    <th className="num">wall s</th>
+                    <th className="num">rating</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -333,11 +333,11 @@ export function RunsPage() {
                     const human = effectiveHuman(run);
                     return (
                       <tr key={run.id} onClick={() => navigate(`/runs/${run.id}`)}>
-                        <td title={exp?.meta?.run_id}>{shortRunId(exp?.meta?.run_id)}</td>
+                        <td className="mono" title={exp?.meta?.run_id}>{shortRunId(exp?.meta?.run_id)}</td>
                         <td>{run.person}</td>
                         <td title={methodTooltip(run)}>{methodLabel(run)}</td>
                         <td>{run.data.git_branch || exp?.meta?.git_branch || "—"}</td>
-                        <td>{shortCommit(run.data.git_commit || exp?.meta?.git_commit)}</td>
+                        <td className="mono">{shortCommit(run.data.git_commit || exp?.meta?.git_commit)}</td>
                         <td>
                           {[exp?.meta?.provider, exp?.meta?.model].filter(Boolean).join(" / ") ||
                             "—"}
@@ -345,11 +345,11 @@ export function RunsPage() {
                         <td>
                           <span className={statusBadge(st)}>{st || "—"}</span>
                         </td>
-                        <td>{formatNumber(weightedOf(run))}</td>
-                        <td>{formatNumber(chartMedians.get(exKey) ?? null)}</td>
-                        <td>{exp?.harness?.model_calls ?? "—"}</td>
-                        <td>{formatNumber(exp?.efficiency?.wall_seconds)}</td>
-                        <td>{human.app_rating ?? "—"}</td>
+                        <td className="num">{formatNumber(weightedOf(run))}</td>
+                        <td className="num">{formatNumber(chartMedians.get(exKey) ?? null)}</td>
+                        <td className="num">{exp?.harness?.model_calls ?? "—"}</td>
+                        <td className="num">{formatNumber(exp?.efficiency?.wall_seconds)}</td>
+                        <td className="num">{human.app_rating ?? "—"}</td>
                       </tr>
                     );
                   })}

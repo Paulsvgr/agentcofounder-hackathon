@@ -23,33 +23,33 @@ import {
 import type { HackathonRunRecord } from "../types/runExport";
 
 const COLORS = [
-  "#0d6e4f",
-  "#1d4ed8",
+  "#2563eb",
+  "#64748b",
+  "#0891b2",
   "#b45309",
+  "#7c3aed",
   "#be123c",
-  "#6d28d9",
-  "#a16207",
-  "#0f766e",
-  "#9d174d",
-  "#3f6212",
+  "#0d9488",
+  "#9333ea",
+  "#475569",
   "#0369a1",
 ];
 
 function chartTheme(dark: boolean) {
   return {
-    tick: { fill: dark ? "#e8eee9" : "#1a2e24", fontSize: 12, fontWeight: 600 as const },
-    grid: dark ? "#3d4a42" : "#c5d0c9",
-    axis: dark ? "#9aaba0" : "#4a5c52",
+    tick: { fill: dark ? "#e8eaed" : "#16191d", fontSize: 12, fontWeight: 500 as const },
+    grid: dark ? "#2e343d" : "#d8dbe0",
+    axis: dark ? "#9aa3af" : "#5b6470",
     tooltip: {
-      background: dark ? "#1a2420" : "#ffffff",
-      border: dark ? "1px solid #5a6b62" : "1px solid #8a9a90",
+      background: dark ? "#181c22" : "#ffffff",
+      border: dark ? "1px solid #2e343d" : "1px solid #d8dbe0",
       borderRadius: 6,
-      color: dark ? "#e8eee9" : "#14201a",
+      color: dark ? "#e8eaed" : "#16191d",
       fontSize: 13,
-      fontWeight: 500,
+      fontWeight: 400,
     },
-    labelFill: dark ? "#e8eee9" : "#1a2e24",
-    pointStroke: dark ? "#e8eee9" : "#14201a",
+    labelFill: dark ? "#e8eaed" : "#16191d",
+    pointStroke: dark ? "#e8eaed" : "#16191d",
   };
 }
 

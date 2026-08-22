@@ -21,11 +21,11 @@ export const STAGE_LABELS: Record<ActionStage, string> = {
 export const STAGE_COLORS: Record<ActionStage, string> = {
   inspect: "#64748b",
   build_app: "#3b82f6",
-  write_tests: "#06b6d4",
-  diagnose: "#f59e0b",
-  repair_loop: "#f97316",
-  green_build: "#22c55e",
-  extra_verify: "#a855f7",
+  write_tests: "#0891b2",
+  diagnose: "#d97706",
+  repair_loop: "#ea580c",
+  green_build: "#16a34a",
+  extra_verify: "#9333ea",
   report_final: "#9ca3af",
 };
 

@@ -11,17 +11,17 @@ import {
 import type { HackathonRunRecord } from "../types/runExport";
 
 const MIX_COLORS = {
-  input: "#0d6e4f",
-  output: "#1d4ed8",
-  cacheRead: "#a16207",
-  cacheWrite: "#6d28d9",
+  input: "#2563eb",
+  output: "#64748b",
+  cacheRead: "#b45309",
+  cacheWrite: "#7c3aed",
   reasoning: "#be123c",
 } as const;
 
 const WEIGHT_COLORS = {
-  input: "#0d6e4f",
-  output: "#1d4ed8",
-  cacheRead: "#a16207",
+  input: "#2563eb",
+  output: "#64748b",
+  cacheRead: "#b45309",
 } as const;
 
 function pct(part: number, total: number): number {
