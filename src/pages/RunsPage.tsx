@@ -3,18 +3,18 @@ import { useNavigate } from "react-router-dom";
 import { RunsCharts } from "../components/RunsCharts";
 import { TokenStatsPanel } from "../components/TokenStats";
 import {
-  EXPERIMENTS,
-  LINES,
   effectiveHuman,
+  experimentFilterOptions,
   experimentKey,
   includeInEfficiencyCompare,
+  lineFilterOptions,
   lineKey,
   loadClassificationManifest,
   methodLabel,
   methodTooltip,
   shouldHideEarlySmoke,
 } from "../lib/classification";
-import { listRuns } from "../lib/api";
+import { fetchPeople, listRuns } from "../lib/api";
 import { shortRunId } from "../lib/actionFlow";
 import {
   formatNumber,
@@ -22,7 +22,7 @@ import {
   shortCommit,
   weightedOf,
 } from "../lib/stats";
-import { HACKATHON_AUTHORS, type HackathonRunRecord } from "../types/runExport";
+import { type HackathonRunRecord } from "../types/runExport";
 
 type SortKey = "weighted_asc" | "rating_desc" | "newest";
 
@@ -43,6 +43,7 @@ export function RunsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [manifestReady, setManifestReady] = useState(false);
+  const [authors, setAuthors] = useState<string[]>([]);
 
   const [author, setAuthor] = useState("");
   const [lines, setLines] = useState<string[]>([]);
@@ -62,8 +63,11 @@ export function RunsPage() {
       try {
         await loadClassificationManifest();
         if (!cancelled) setManifestReady(true);
-        const data = await listRuns();
-        if (!cancelled) setRuns(data);
+        const [data, people] = await Promise.all([listRuns(), fetchPeople()]);
+        if (!cancelled) {
+          setRuns(data);
+          setAuthors(people);
+        }
       } catch (err) {
         if (!cancelled) {
           setError(err instanceof Error ? err.message : "Failed to load runs.");
@@ -94,6 +98,24 @@ export function RunsPage() {
     }
     return [...set].sort();
   }, [runs]);
+
+  const lineOptions = useMemo(() => {
+    if (!manifestReady) return [];
+    return lineFilterOptions(runs);
+  }, [runs, manifestReady]);
+
+  const experimentOptions = useMemo(() => {
+    if (!manifestReady) return [];
+    return experimentFilterOptions(runs);
+  }, [runs, manifestReady]);
+
+  const authorOptions = useMemo(() => {
+    const set = new Set<string>(authors);
+    for (const r of runs) {
+      if (r.person) set.add(r.person);
+    }
+    return [...set].sort();
+  }, [authors, runs]);
 
   const filtered = useMemo(() => {
     if (!manifestReady) return [];
@@ -160,7 +182,7 @@ export function RunsPage() {
             <label htmlFor="f-author">Author</label>
             <select id="f-author" value={author} onChange={(e) => setAuthor(e.target.value)}>
               <option value="">All</option>
-              {HACKATHON_AUTHORS.map((a) => (
+              {authorOptions.map((a) => (
                 <option key={a} value={a}>
                   {a}
                 </option>
@@ -179,7 +201,7 @@ export function RunsPage() {
                 setLines(selected);
               }}
             >
-              {LINES.map((l) => (
+              {lineOptions.map((l) => (
                 <option key={l} value={l}>
                   {l}
                 </option>
@@ -198,7 +220,7 @@ export function RunsPage() {
                 setExperiments(selected);
               }}
             >
-              {EXPERIMENTS.map((ex) => (
+              {experimentOptions.map((ex) => (
                 <option key={ex} value={ex}>
                   {ex.replace(/-/g, " ")}
                 </option>

@@ -66,6 +66,10 @@ export type ClassificationExperiment =
   | "prime-comparison"
   | "exp1-rtl-control"
   | "exp1-rtl-cleanup"
+  | "exp2-stop-control"
+  | "exp2-stop-treatment"
+  | "exp3-test-control"
+  | "exp3-test-treatment"
   | "legacy"
   | "legacy-smoke"
   | "unknown";

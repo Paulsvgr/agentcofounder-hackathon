@@ -1,6 +1,6 @@
 {
   "schema": "agentcofounder.runs_classification.v1",
-  "generated_at": "2026-08-22T13:13:35.293957Z",
+  "generated_at": "2026-08-22T14:06:14.481222Z",
   "description": "Canonical method labels for hackathon runs UI backfill. Overlay by run_id on ingest; wins over derived meta.approach.",
   "taxonomy": {
     "line": [
@@ -26,6 +26,8 @@
       "exp1-rtl-cleanup",
       "exp2-stop-control",
       "exp2-stop-treatment",
+      "exp3-test-control",
+      "exp3-test-treatment",
       "legacy",
       "legacy-smoke",
       "unknown"
@@ -33,7 +35,7 @@
   },
   "derivation_rules": [
     "If run_id exists in this manifest, use classification + human fields as canonical.",
-    "Else derive experiment from meta.approach prefix: A-autoverify-owned* \u2192 autoverify-owned, A-autoverify-supplement* \u2192 autoverify-supplement, A-prompt* \u2192 no-dev-server-prompt, A-autotest* \u2192 auto-test, A-baseline* / A-raw* \u2192 baseline, rtl-control* \u2192 exp1-rtl-control, rtl-cleanup* \u2192 exp1-rtl-cleanup, stop-control* \u2192 exp2-stop-control, stop-treatment* \u2192 exp2-stop-treatment.",
+    "Else derive experiment from meta.approach prefix: A-autoverify-owned* \u2192 autoverify-owned, A-autoverify-supplement* \u2192 autoverify-supplement, A-prompt* \u2192 no-dev-server-prompt, A-autotest* \u2192 auto-test, A-baseline* / A-raw* \u2192 baseline, rtl-control* \u2192 exp1-rtl-control, rtl-cleanup* \u2192 exp1-rtl-cleanup, stop-control* \u2192 exp2-stop-control, stop-treatment* \u2192 exp2-stop-treatment, test-policy-treatment* \u2192 exp3-test-treatment.",
     "Else if git_branch === exp/auto-verify, experiment = autoverify-unknown.",
     "Else if git_branch === main && git_commit starts with d0f0b49, line = A, experiment = baseline.",
     "Parse run_index from trailing -N on approach string when present.",
@@ -1139,7 +1141,7 @@
       },
       "source": {
         "git_branch": "setup/measure",
-        "git_commit": "b07c4834cf1506265b1fd06ed988dc2116704eae",
+        "git_commit": "d912dfa18d65442e07d6e3131e2e1fafc5bc5c9a",
         "provider": "zai",
         "model": "glm-5.2",
         "harness_status": "success",
@@ -1166,7 +1168,7 @@
       },
       "source": {
         "git_branch": "setup/measure",
-        "git_commit": "b07c4834cf1506265b1fd06ed988dc2116704eae",
+        "git_commit": "d912dfa18d65442e07d6e3131e2e1fafc5bc5c9a",
         "provider": "zai",
         "model": "glm-5.2",
         "harness_status": "success",
@@ -1193,7 +1195,7 @@
       },
       "source": {
         "git_branch": "setup/measure",
-        "git_commit": "b07c4834cf1506265b1fd06ed988dc2116704eae",
+        "git_commit": "d912dfa18d65442e07d6e3131e2e1fafc5bc5c9a",
         "provider": "zai",
         "model": "glm-5.2",
         "harness_status": "success",
@@ -1220,7 +1222,7 @@
       },
       "source": {
         "git_branch": "setup/measure",
-        "git_commit": "b07c4834cf1506265b1fd06ed988dc2116704eae",
+        "git_commit": "d912dfa18d65442e07d6e3131e2e1fafc5bc5c9a",
         "provider": "zai",
         "model": "glm-5.2",
         "harness_status": "success",
@@ -1247,7 +1249,7 @@
       },
       "source": {
         "git_branch": "setup/measure",
-        "git_commit": "b07c4834cf1506265b1fd06ed988dc2116704eae",
+        "git_commit": "d912dfa18d65442e07d6e3131e2e1fafc5bc5c9a",
         "provider": "zai",
         "model": "glm-5.2",
         "harness_status": "success",
@@ -1274,7 +1276,7 @@
       },
       "source": {
         "git_branch": "setup/measure",
-        "git_commit": "b07c4834cf1506265b1fd06ed988dc2116704eae",
+        "git_commit": "d912dfa18d65442e07d6e3131e2e1fafc5bc5c9a",
         "provider": "zai",
         "model": "glm-5.2",
         "harness_status": "success",
@@ -1301,7 +1303,7 @@
       },
       "source": {
         "git_branch": "setup/measure",
-        "git_commit": "b07c4834cf1506265b1fd06ed988dc2116704eae",
+        "git_commit": "d912dfa18d65442e07d6e3131e2e1fafc5bc5c9a",
         "provider": "zai",
         "model": "glm-5.2",
         "harness_status": "success",
@@ -1328,7 +1330,7 @@
       },
       "source": {
         "git_branch": "setup/measure",
-        "git_commit": "b07c4834cf1506265b1fd06ed988dc2116704eae",
+        "git_commit": "d912dfa18d65442e07d6e3131e2e1fafc5bc5c9a",
         "provider": "zai",
         "model": "glm-5.2",
         "harness_status": "success",
@@ -1355,7 +1357,7 @@
       },
       "source": {
         "git_branch": "setup/measure",
-        "git_commit": "b07c4834cf1506265b1fd06ed988dc2116704eae",
+        "git_commit": "d912dfa18d65442e07d6e3131e2e1fafc5bc5c9a",
         "provider": "zai",
         "model": "glm-5.2",
         "harness_status": "success",
@@ -1382,7 +1384,7 @@
       },
       "source": {
         "git_branch": "setup/measure",
-        "git_commit": "b07c4834cf1506265b1fd06ed988dc2116704eae",
+        "git_commit": "d912dfa18d65442e07d6e3131e2e1fafc5bc5c9a",
         "provider": "zai",
         "model": "glm-5.2",
         "harness_status": "success",
@@ -1409,12 +1411,255 @@
       },
       "source": {
         "git_branch": "setup/measure",
-        "git_commit": "b07c4834cf1506265b1fd06ed988dc2116704eae",
+        "git_commit": "d912dfa18d65442e07d6e3131e2e1fafc5bc5c9a",
         "provider": "zai",
         "model": "glm-5.2",
         "harness_status": "success",
         "weighted_total": 114871,
         "model_calls": 31
+      }
+    },
+    "2026-08-22T13-05-39-237Z": {
+      "classification": {
+        "line": "F",
+        "experiment": "exp2-stop-treatment",
+        "run_index": 2,
+        "display_label": "F \u00b7 exp2 stop treatment \u00b7 run 2",
+        "legacy_approach": "stop-treatment-2"
+      },
+      "human": {
+        "app_rating": null,
+        "run_comment": null
+      },
+      "flags": {
+        "exclude_from_ranking": false,
+        "hide_early_smoke": false,
+        "include_in_efficiency_compare": true
+      },
+      "source": {
+        "git_branch": "setup/measure",
+        "git_commit": "d912dfa18d65442e07d6e3131e2e1fafc5bc5c9a",
+        "provider": "zai",
+        "model": "glm-5.2",
+        "harness_status": "success",
+        "weighted_total": 463815,
+        "model_calls": 94
+      }
+    },
+    "2026-08-22T13-17-13-191Z": {
+      "classification": {
+        "line": "F",
+        "experiment": "exp2-stop-treatment",
+        "run_index": 3,
+        "display_label": "F \u00b7 exp2 stop treatment \u00b7 run 3",
+        "legacy_approach": "stop-treatment-3"
+      },
+      "human": {
+        "app_rating": null,
+        "run_comment": null
+      },
+      "flags": {
+        "exclude_from_ranking": false,
+        "hide_early_smoke": false,
+        "include_in_efficiency_compare": true
+      },
+      "source": {
+        "git_branch": "setup/measure",
+        "git_commit": "d912dfa18d65442e07d6e3131e2e1fafc5bc5c9a",
+        "provider": "zai",
+        "model": "glm-5.2",
+        "harness_status": "success",
+        "weighted_total": 98214,
+        "model_calls": 29
+      }
+    },
+    "2026-08-22T13-21-13-940Z": {
+      "classification": {
+        "line": "F",
+        "experiment": "exp2-stop-treatment",
+        "run_index": 4,
+        "display_label": "F \u00b7 exp2 stop treatment \u00b7 run 4",
+        "legacy_approach": "stop-treatment-4"
+      },
+      "human": {
+        "app_rating": null,
+        "run_comment": null
+      },
+      "flags": {
+        "exclude_from_ranking": false,
+        "hide_early_smoke": false,
+        "include_in_efficiency_compare": true
+      },
+      "source": {
+        "git_branch": "setup/measure",
+        "git_commit": "d912dfa18d65442e07d6e3131e2e1fafc5bc5c9a",
+        "provider": "zai",
+        "model": "glm-5.2",
+        "harness_status": "success",
+        "weighted_total": 88668,
+        "model_calls": 24
+      }
+    },
+    "2026-08-22T13-24-33-801Z": {
+      "classification": {
+        "line": "F",
+        "experiment": "exp2-stop-treatment",
+        "run_index": 5,
+        "display_label": "F \u00b7 exp2 stop treatment \u00b7 run 5",
+        "legacy_approach": "stop-treatment-5"
+      },
+      "human": {
+        "app_rating": null,
+        "run_comment": null
+      },
+      "flags": {
+        "exclude_from_ranking": false,
+        "hide_early_smoke": false,
+        "include_in_efficiency_compare": true
+      },
+      "source": {
+        "git_branch": "setup/measure",
+        "git_commit": "d912dfa18d65442e07d6e3131e2e1fafc5bc5c9a",
+        "provider": "zai",
+        "model": "glm-5.2",
+        "harness_status": "success",
+        "weighted_total": 110299,
+        "model_calls": 33
+      }
+    },
+    "2026-08-22T13-36-39-241Z": {
+      "classification": {
+        "line": "F",
+        "experiment": "exp3-test-treatment",
+        "run_index": 1,
+        "display_label": "F \u00b7 exp3 test treatment \u00b7 run 1",
+        "legacy_approach": "test-policy-treatment-1"
+      },
+      "human": {
+        "app_rating": null,
+        "run_comment": null
+      },
+      "flags": {
+        "exclude_from_ranking": false,
+        "hide_early_smoke": false,
+        "include_in_efficiency_compare": true
+      },
+      "source": {
+        "git_branch": "setup/measure",
+        "git_commit": "be86ac39d1a68f12f07c8f8c3cb830b132877d44",
+        "provider": "zai",
+        "model": "glm-5.2",
+        "harness_status": "success",
+        "weighted_total": 94731,
+        "model_calls": 25
+      }
+    },
+    "2026-08-22T13-40-30-448Z": {
+      "classification": {
+        "line": "F",
+        "experiment": "exp3-test-treatment",
+        "run_index": 2,
+        "display_label": "F \u00b7 exp3 test treatment \u00b7 run 2",
+        "legacy_approach": "test-policy-treatment-2"
+      },
+      "human": {
+        "app_rating": null,
+        "run_comment": null
+      },
+      "flags": {
+        "exclude_from_ranking": false,
+        "hide_early_smoke": false,
+        "include_in_efficiency_compare": true
+      },
+      "source": {
+        "git_branch": "setup/measure",
+        "git_commit": "be86ac39d1a68f12f07c8f8c3cb830b132877d44",
+        "provider": "zai",
+        "model": "glm-5.2",
+        "harness_status": "success",
+        "weighted_total": 149412,
+        "model_calls": 41
+      }
+    },
+    "2026-08-22T13-45-25-291Z": {
+      "classification": {
+        "line": "F",
+        "experiment": "exp3-test-treatment",
+        "run_index": 3,
+        "display_label": "F \u00b7 exp3 test treatment \u00b7 run 3",
+        "legacy_approach": "test-policy-treatment-3"
+      },
+      "human": {
+        "app_rating": null,
+        "run_comment": null
+      },
+      "flags": {
+        "exclude_from_ranking": false,
+        "hide_early_smoke": false,
+        "include_in_efficiency_compare": true
+      },
+      "source": {
+        "git_branch": "setup/measure",
+        "git_commit": "be86ac39d1a68f12f07c8f8c3cb830b132877d44",
+        "provider": "zai",
+        "model": "glm-5.2",
+        "harness_status": "success",
+        "weighted_total": 86211,
+        "model_calls": 23
+      }
+    },
+    "2026-08-22T13-48-43-833Z": {
+      "classification": {
+        "line": "F",
+        "experiment": "exp3-test-treatment",
+        "run_index": 4,
+        "display_label": "F \u00b7 exp3 test treatment \u00b7 run 4",
+        "legacy_approach": "test-policy-treatment-4"
+      },
+      "human": {
+        "app_rating": null,
+        "run_comment": null
+      },
+      "flags": {
+        "exclude_from_ranking": false,
+        "hide_early_smoke": false,
+        "include_in_efficiency_compare": true
+      },
+      "source": {
+        "git_branch": "setup/measure",
+        "git_commit": "be86ac39d1a68f12f07c8f8c3cb830b132877d44",
+        "provider": "zai",
+        "model": "glm-5.2",
+        "harness_status": "success",
+        "weighted_total": 43298,
+        "model_calls": 11
+      }
+    },
+    "2026-08-22T13-50-41-642Z": {
+      "classification": {
+        "line": "F",
+        "experiment": "exp3-test-treatment",
+        "run_index": 5,
+        "display_label": "F \u00b7 exp3 test treatment \u00b7 run 5",
+        "legacy_approach": "test-policy-treatment-5"
+      },
+      "human": {
+        "app_rating": null,
+        "run_comment": null
+      },
+      "flags": {
+        "exclude_from_ranking": false,
+        "hide_early_smoke": false,
+        "include_in_efficiency_compare": true
+      },
+      "source": {
+        "git_branch": "setup/measure",
+        "git_commit": "be86ac39d1a68f12f07c8f8c3cb830b132877d44",
+        "provider": "zai",
+        "model": "glm-5.2",
+        "harness_status": "failed",
+        "weighted_total": 40230,
+        "model_calls": 11
       }
     }
   }

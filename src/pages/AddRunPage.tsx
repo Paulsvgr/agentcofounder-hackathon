@@ -1,8 +1,9 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { HowToExportPanel } from "../components/HowToExportPanel";
 import {
   createRunFromPaste,
+  fetchPeople,
   getStoredAccessKey,
   setStoredAccessKey,
 } from "../lib/api";
@@ -22,7 +23,8 @@ type Step = "paste" | "meta" | "human";
 
 export function AddRunPage() {
   const navigate = useNavigate();
-  const [author, setAuthor] = useState(HACKATHON_AUTHORS[0]);
+  const [authors, setAuthors] = useState<string[]>([...HACKATHON_AUTHORS]);
+  const [author, setAuthor] = useState<string>(HACKATHON_AUTHORS[0] ?? "paul");
   const [paste, setPaste] = useState("");
   const [detected, setDetected] = useState<Extract<DetectedPaste, { kind: PasteKind }> | null>(
     null,
@@ -30,6 +32,23 @@ export function AddRunPage() {
   const [parsed, setParsed] = useState<RunExport | null>(null);
   const [pasteKind, setPasteKind] = useState<PasteKind | null>(null);
   const [step, setStep] = useState<Step>("paste");
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const people = await fetchPeople();
+        if (cancelled || people.length === 0) return;
+        setAuthors(people);
+        setAuthor((current) => (people.includes(current) ? current : people[0]!));
+      } catch {
+        /* keep HACKATHON_AUTHORS fallback */
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const [approach, setApproach] = useState("");
   const [provider, setProvider] = useState("");
@@ -197,7 +216,7 @@ export function AddRunPage() {
               value={author}
               onChange={(e) => setAuthor(e.target.value as typeof author)}
             >
-              {HACKATHON_AUTHORS.map((name) => (
+              {authors.map((name) => (
                 <option key={name} value={name}>
                   {name}
                 </option>

@@ -17,12 +17,21 @@ const EXPERIMENTS = [
   "prime-comparison",
   "exp1-rtl-control",
   "exp1-rtl-cleanup",
+  "exp2-stop-control",
+  "exp2-stop-treatment",
+  "exp3-test-control",
+  "exp3-test-treatment",
   "legacy",
   "legacy-smoke",
   "unknown",
 ] as const;
 
 export { LINES, EXPERIMENTS };
+
+type ManifestTaxonomy = {
+  line: string[];
+  experiment: string[];
+};
 
 type ManifestEntry = {
   classification?: RunClassification;
@@ -31,7 +40,21 @@ type ManifestEntry = {
 };
 
 let manifestRuns: Record<string, ManifestEntry> | null = null;
+let manifestTaxonomy: ManifestTaxonomy | null = null;
 let manifestPromise: Promise<Record<string, ManifestEntry>> | null = null;
+
+function parseTaxonomy(body: unknown): ManifestTaxonomy | null {
+  if (!body || typeof body !== "object") return null;
+  const tax = (body as { taxonomy?: unknown }).taxonomy;
+  if (!tax || typeof tax !== "object") return null;
+  const line = (tax as { line?: unknown }).line;
+  const experiment = (tax as { experiment?: unknown }).experiment;
+  if (!Array.isArray(line) || !Array.isArray(experiment)) return null;
+  return {
+    line: line.filter((v): v is string => typeof v === "string"),
+    experiment: experiment.filter((v): v is string => typeof v === "string"),
+  };
+}
 
 export async function loadClassificationManifest(): Promise<Record<string, ManifestEntry>> {
   if (manifestRuns) return manifestRuns;
@@ -39,15 +62,50 @@ export async function loadClassificationManifest(): Promise<Record<string, Manif
     manifestPromise = fetch("/runs-classification.json")
       .then((r) => (r.ok ? r.json() : { runs: {} }))
       .then((body) => {
+        manifestTaxonomy = parseTaxonomy(body);
         manifestRuns = (body?.runs as Record<string, ManifestEntry>) || {};
         return manifestRuns;
       })
       .catch(() => {
+        manifestTaxonomy = null;
         manifestRuns = {};
         return manifestRuns;
       });
   }
   return manifestPromise;
+}
+
+export function getManifestTaxonomy(): ManifestTaxonomy | null {
+  return manifestTaxonomy;
+}
+
+function mergeFilterOptions(fromRuns: Iterable<string>, fromTaxonomy: string[] | undefined): string[] {
+  const set = new Set<string>();
+  for (const value of fromTaxonomy ?? []) {
+    if (value) set.add(value);
+  }
+  for (const value of fromRuns) {
+    if (value) set.add(value);
+  }
+  return [...set].sort((a, b) => {
+    if (a === "unknown") return 1;
+    if (b === "unknown") return -1;
+    return a.localeCompare(b);
+  });
+}
+
+export function lineFilterOptions(runs: HackathonRunRecord[]): string[] {
+  return mergeFilterOptions(
+    runs.map((run) => lineKey(run)),
+    manifestTaxonomy?.line,
+  );
+}
+
+export function experimentFilterOptions(runs: HackathonRunRecord[]): string[] {
+  return mergeFilterOptions(
+    runs.map((run) => experimentKey(run)),
+    manifestTaxonomy?.experiment,
+  );
 }
 
 function parseRunIndex(approach: string): number | null {
@@ -59,6 +117,9 @@ function lineFromApproach(approach: string): RunClassification["line"] {
   if (!approach) return "unknown";
   const low = approach.toLowerCase();
   if (low.startsWith("rtl-control") || low.startsWith("rtl-cleanup")) return "F";
+  if (low.startsWith("stop-") || low.startsWith("test-policy-") || low.startsWith("test-")) {
+    return "F";
+  }
   if (low.startsWith("a-prime")) return "A-prime";
   if (low.startsWith("b-prime")) return "B-prime";
   if (low.startsWith("c-prime")) return "C-prime";
@@ -77,6 +138,14 @@ function experimentFromApproach(
   const low = approach.toLowerCase();
   if (low.startsWith("rtl-control")) return "exp1-rtl-control";
   if (low.startsWith("rtl-cleanup")) return "exp1-rtl-cleanup";
+  if (low.startsWith("stop-control")) return "exp2-stop-control";
+  if (low.startsWith("stop-treatment")) return "exp2-stop-treatment";
+  if (low.startsWith("test-policy-control") || low.startsWith("test-control")) {
+    return "exp3-test-control";
+  }
+  if (low.startsWith("test-policy-treatment") || low.startsWith("test-treatment")) {
+    return "exp3-test-treatment";
+  }
   if (approach.startsWith("A-autoverify-owned-gated") || approach.toLowerCase().includes("gated")) {
     return "autoverify-gated";
   }
