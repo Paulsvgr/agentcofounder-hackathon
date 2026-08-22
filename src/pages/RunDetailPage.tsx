@@ -2,6 +2,12 @@ import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { getRun } from "../lib/api";
 import { RunTokenStats } from "../components/TokenStats";
+import {
+  effectiveClassification,
+  effectiveHuman,
+  loadClassificationManifest,
+  methodLabel,
+} from "../lib/classification";
 import { formatNumber, shortCommit } from "../lib/stats";
 import type { HackathonRunRecord, TestRun } from "../types/runExport";
 
@@ -44,6 +50,7 @@ export function RunDetailPage() {
       setLoading(true);
       setError(null);
       try {
+        await loadClassificationManifest();
         const data = await getRun(id);
         if (!cancelled) setRun(data);
       } catch (err) {
@@ -65,6 +72,8 @@ export function RunDetailPage() {
 
   const exp = run.data.export;
   const phases = exp?.efficiency?.phase_heuristic || [];
+  const cls = effectiveClassification(run);
+  const human = effectiveHuman(run);
 
   return (
     <div className="stack">
@@ -75,9 +84,12 @@ export function RunDetailPage() {
       <section className="panel">
         <h2>{exp?.meta?.run_id || run.id}</h2>
         <p className="muted" style={{ marginTop: 0 }}>
-          {run.person} · {exp?.meta?.approach || run.data.approach_kind || "—"} ·{" "}
+          {methodLabel(run)} · {run.person} ·{" "}
           {run.data.git_branch || exp?.meta?.git_branch || "—"} @{" "}
           {shortCommit(run.data.git_commit || exp?.meta?.git_commit)}
+        </p>
+        <p className="muted" style={{ marginTop: 0, fontSize: "0.85rem" }}>
+          Legacy approach: {cls.legacy_approach}
         </p>
 
         <div className="stat-grid">
@@ -99,7 +111,7 @@ export function RunDetailPage() {
           </div>
           <div className="stat">
             <div className="label">App rating</div>
-            <div className="value">{run.data.app_rating ?? "—"}</div>
+            <div className="value">{human.app_rating ?? "—"}</div>
           </div>
           <div className="stat">
             <div className="label">Provider / model</div>
@@ -136,10 +148,10 @@ export function RunDetailPage() {
       <section className="panel">
         <h3>Human notes</h3>
         <p>
-          <strong>App:</strong> {run.data.app_comment || "—"}
+          <strong>App:</strong> {human.app_comment || run.data.app_comment || "—"}
         </p>
         <p>
-          <strong>Run:</strong> {run.data.run_comment || "—"}
+          <strong>Run:</strong> {human.run_comment || run.data.run_comment || "—"}
         </p>
       </section>
 

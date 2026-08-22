@@ -14,10 +14,10 @@ import {
   ZAxis,
 } from "recharts";
 import { useTheme } from "../lib/theme";
+import { experimentKey, methodLabel } from "../lib/classification";
 import {
-  approachKey,
   formatNumber,
-  medianWeightedByApproach,
+  medianWeightedByExperiment,
   weightedOf,
 } from "../lib/stats";
 import type { HackathonRunRecord } from "../types/runExport";
@@ -77,29 +77,31 @@ export function RunsCharts({ runs, onSelectRun }: Props) {
     return runs
       .map((run) => {
         const w = weightedOf(run);
-        const rating = run.data.app_rating;
+        const rating = run.data.app_rating ?? run.data.human?.app_rating;
         if (w === null || rating === null || rating === undefined) return null;
-        const approach = approachKey(run);
+        const experiment = experimentKey(run);
+        const label = methodLabel(run);
         return {
           id: run.id,
           runId: run.data.export?.meta?.run_id || run.id.slice(0, 8),
-          approach,
+          approach: experiment,
+          label,
           weighted: w,
           rating,
-          fill: colorFor(approach),
+          fill: colorFor(experiment),
         };
       })
       .filter((x): x is NonNullable<typeof x> => x !== null);
   }, [runs]);
 
   const medianBars = useMemo(() => {
-    const med = medianWeightedByApproach(runs);
+    const med = medianWeightedByExperiment(runs);
     return [...med.entries()]
-      .map(([approach, median]) => ({
-        approach,
-        label: shortLabel(approach),
-        median: Math.round(median),
-        fill: colorFor(approach),
+      .map(([experiment, medianVal]) => ({
+        approach: experiment,
+        label: shortLabel(experiment.replace(/-/g, " ")),
+        median: Math.round(medianVal),
+        fill: colorFor(experiment),
       }))
       .sort((a, b) => a.median - b.median);
   }, [runs]);
@@ -107,7 +109,7 @@ export function RunsCharts({ runs, onSelectRun }: Props) {
   const successBars = useMemo(() => {
     const buckets = new Map<string, { ok: number; n: number }>();
     for (const run of runs) {
-      const key = approachKey(run);
+      const key = experimentKey(run);
       const b = buckets.get(key) ?? { ok: 0, n: 0 };
       b.n += 1;
       if ((run.data.export?.harness?.status || "").toLowerCase() === "success") {
@@ -185,9 +187,9 @@ export function RunsCharts({ runs, onSelectRun }: Props) {
                 ]}
                 labelFormatter={(_, payload) => {
                   const p = payload?.[0]?.payload as
-                    | { approach?: string; runId?: string }
+                    | { label?: string; runId?: string }
                     | undefined;
-                  return p ? `${p.approach} · ${p.runId}` : "";
+                  return p ? `${p.label} · ${p.runId}` : "";
                 }}
               />
               <Scatter
@@ -213,8 +215,8 @@ export function RunsCharts({ runs, onSelectRun }: Props) {
       </div>
 
       <div className="chart-card">
-        <h3>Median weighted by approach</h3>
-        <p className="chart-hint">Lower is better. Approach names on the left.</p>
+        <h3>Median weighted by experiment</h3>
+        <p className="chart-hint">Lower is better. Grouped by structured experiment.</p>
         <div className="chart-box">
           <ResponsiveContainer width="100%" height={barHeight}>
             <BarChart
@@ -265,7 +267,7 @@ export function RunsCharts({ runs, onSelectRun }: Props) {
       </div>
 
       <div className="chart-card">
-        <h3>Success rate by approach</h3>
+        <h3>Success rate by experiment</h3>
         <p className="chart-hint">Share of runs with status success.</p>
         <div className="chart-box">
           <ResponsiveContainer width="100%" height={barHeight}>

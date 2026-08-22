@@ -2,11 +2,22 @@ import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { RunsCharts } from "../components/RunsCharts";
 import { TokenStatsPanel } from "../components/TokenStats";
+import {
+  EXPERIMENTS,
+  LINES,
+  effectiveHuman,
+  experimentKey,
+  includeInEfficiencyCompare,
+  lineKey,
+  loadClassificationManifest,
+  methodLabel,
+  methodTooltip,
+  shouldHideEarlySmoke,
+} from "../lib/classification";
 import { listRuns } from "../lib/api";
 import {
-  approachKey,
   formatNumber,
-  medianWeightedByApproach,
+  medianWeightedByExperiment,
   shortCommit,
   weightedOf,
 } from "../lib/stats";
@@ -21,9 +32,8 @@ function statusBadge(status: string | undefined) {
   return "badge badge-warn";
 }
 
-function isNoiseApproach(key: string): boolean {
-  const k = key.toLowerCase();
-  return k === "early-smoke" || k === "unknown" || k === "—" || k === "-";
+function toggleInList(list: string[], value: string): string[] {
+  return list.includes(value) ? list.filter((x) => x !== value) : [...list, value];
 }
 
 export function RunsPage() {
@@ -31,13 +41,16 @@ export function RunsPage() {
   const [runs, setRuns] = useState<HackathonRunRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [manifestReady, setManifestReady] = useState(false);
 
   const [author, setAuthor] = useState("");
-  const [approach, setApproach] = useState("");
+  const [lines, setLines] = useState<string[]>([]);
+  const [experiments, setExperiments] = useState<string[]>([]);
   const [branch, setBranch] = useState("");
   const [status, setStatus] = useState("");
   const [sort, setSort] = useState<SortKey>("weighted_asc");
   const [hideNoise, setHideNoise] = useState(true);
+  const [includeExcluded, setIncludeExcluded] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -45,6 +58,8 @@ export function RunsPage() {
       setLoading(true);
       setError(null);
       try {
+        await loadClassificationManifest();
+        if (!cancelled) setManifestReady(true);
         const data = await listRuns();
         if (!cancelled) setRuns(data);
       } catch (err) {
@@ -60,12 +75,6 @@ export function RunsPage() {
     };
   }, []);
 
-  const approaches = useMemo(() => {
-    const set = new Set<string>();
-    for (const r of runs) set.add(approachKey(r));
-    return [...set].sort();
-  }, [runs]);
-
   const branches = useMemo(() => {
     const set = new Set<string>();
     for (const r of runs) {
@@ -75,15 +84,15 @@ export function RunsPage() {
     return [...set].sort();
   }, [runs]);
 
-  const medians = useMemo(() => medianWeightedByApproach(runs), [runs]);
-
   const filtered = useMemo(() => {
+    if (!manifestReady) return [];
     let list = [...runs];
     if (hideNoise) {
-      list = list.filter((r) => !isNoiseApproach(approachKey(r)));
+      list = list.filter((r) => !shouldHideEarlySmoke(r));
     }
     if (author) list = list.filter((r) => r.person === author);
-    if (approach) list = list.filter((r) => approachKey(r) === approach);
+    if (lines.length) list = list.filter((r) => lines.includes(lineKey(r)));
+    if (experiments.length) list = list.filter((r) => experiments.includes(experimentKey(r)));
     if (branch) {
       list = list.filter(
         (r) => (r.data.git_branch || r.data.export?.meta?.git_branch) === branch,
@@ -97,11 +106,13 @@ export function RunsPage() {
 
     list.sort((a, b) => {
       if (sort === "newest") {
-        return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+        const ra = a.data.export?.meta?.recorded_at || a.created_at;
+        const rb = b.data.export?.meta?.recorded_at || b.created_at;
+        return new Date(rb).getTime() - new Date(ra).getTime();
       }
       if (sort === "rating_desc") {
-        const ra = a.data.app_rating ?? -1;
-        const rb = b.data.app_rating ?? -1;
+        const ra = effectiveHuman(a).app_rating ?? -1;
+        const rb = effectiveHuman(b).app_rating ?? -1;
         return rb - ra;
       }
       const wa = weightedOf(a);
@@ -112,17 +123,22 @@ export function RunsPage() {
       return wa - wb;
     });
     return list;
-  }, [runs, author, approach, branch, status, sort, hideNoise]);
+  }, [runs, author, lines, experiments, branch, status, sort, hideNoise, manifestReady]);
 
-  const chartMedians = useMemo(() => medianWeightedByApproach(filtered), [filtered]);
+  const chartRuns = useMemo(() => {
+    if (includeExcluded) return filtered;
+    return filtered.filter((r) => includeInEfficiencyCompare(r));
+  }, [filtered, includeExcluded]);
+
+  const chartMedians = useMemo(() => medianWeightedByExperiment(chartRuns), [chartRuns]);
 
   return (
     <div className="stack page-center">
       <section className="panel">
         <h2>Compare runs</h2>
         <p className="muted lead">
-          Lower <code>weighted_total</code> is better when status is comparable. Charts use the
-          same filters as the table.
+          Filter by structured <strong>line</strong> and <strong>experiment</strong>. Charts group
+          by experiment and default to ranking-eligible runs only.
         </p>
 
         <div className="filters row">
@@ -137,18 +153,40 @@ export function RunsPage() {
               ))}
             </select>
           </div>
-          <div className="field">
-            <label htmlFor="f-approach">Approach</label>
+          <div className="field field-multi">
+            <label htmlFor="f-line">Line</label>
             <select
-              id="f-approach"
-              value={approach}
-              onChange={(e) => setApproach(e.target.value)}
+              id="f-line"
+              multiple
+              size={4}
+              value={lines}
+              onChange={(e) => {
+                const selected = [...e.target.selectedOptions].map((o) => o.value);
+                setLines(selected);
+              }}
             >
-              <option value="">All</option>
-              {approaches.map((a) => (
-                <option key={a} value={a}>
-                  {a}
-                  {medians.has(a) ? ` (med ${formatNumber(medians.get(a))})` : ""}
+              {LINES.map((l) => (
+                <option key={l} value={l}>
+                  {l}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div className="field field-multi">
+            <label htmlFor="f-experiment">Experiment</label>
+            <select
+              id="f-experiment"
+              multiple
+              size={4}
+              value={experiments}
+              onChange={(e) => {
+                const selected = [...e.target.selectedOptions].map((o) => o.value);
+                setExperiments(selected);
+              }}
+            >
+              {EXPERIMENTS.map((ex) => (
+                <option key={ex} value={ex}>
+                  {ex.replace(/-/g, " ")}
                 </option>
               ))}
             </select>
@@ -193,7 +231,40 @@ export function RunsPage() {
             />
             Hide early-smoke / unknown
           </label>
+          <label className="check-field">
+            <input
+              type="checkbox"
+              checked={includeExcluded}
+              onChange={(e) => setIncludeExcluded(e.target.checked)}
+            />
+            Include excluded runs in charts
+          </label>
         </div>
+
+        {(lines.length > 0 || experiments.length > 0) && (
+          <div className="chips filter-chips">
+            {lines.map((l) => (
+              <button
+                key={`line-${l}`}
+                type="button"
+                className="chip chip-btn"
+                onClick={() => setLines(toggleInList(lines, l))}
+              >
+                line: {l} ×
+              </button>
+            ))}
+            {experiments.map((ex) => (
+              <button
+                key={`exp-${ex}`}
+                type="button"
+                className="chip chip-btn"
+                onClick={() => setExperiments(toggleInList(experiments, ex))}
+              >
+                {ex.replace(/-/g, " ")} ×
+              </button>
+            ))}
+          </div>
+        )}
 
         {loading && <p className="muted">Loading…</p>}
         {error && <div className="alert alert-error">{error}</div>}
@@ -202,7 +273,7 @@ export function RunsPage() {
           <>
             <TokenStatsPanel runs={filtered} />
 
-            <RunsCharts runs={filtered} onSelectRun={(id) => navigate(`/runs/${id}`)} />
+            <RunsCharts runs={chartRuns} onSelectRun={(id) => navigate(`/runs/${id}`)} />
 
             <div className="table-wrap">
               <table className="runs">
@@ -210,13 +281,13 @@ export function RunsPage() {
                   <tr>
                     <th>run_id</th>
                     <th>author</th>
-                    <th>approach</th>
+                    <th>method</th>
                     <th>branch</th>
                     <th>commit</th>
                     <th>provider / model</th>
                     <th>status</th>
                     <th>weighted</th>
-                    <th>approach med</th>
+                    <th>exp. med</th>
                     <th>calls</th>
                     <th>wall s</th>
                     <th>rating</th>
@@ -232,13 +303,14 @@ export function RunsPage() {
                   )}
                   {filtered.map((run) => {
                     const exp = run.data.export;
-                    const key = approachKey(run);
                     const st = exp?.harness?.status;
+                    const exKey = experimentKey(run);
+                    const human = effectiveHuman(run);
                     return (
                       <tr key={run.id} onClick={() => navigate(`/runs/${run.id}`)}>
                         <td>{exp?.meta?.run_id || "—"}</td>
                         <td>{run.person}</td>
-                        <td>{key}</td>
+                        <td title={methodTooltip(run)}>{methodLabel(run)}</td>
                         <td>{run.data.git_branch || exp?.meta?.git_branch || "—"}</td>
                         <td>{shortCommit(run.data.git_commit || exp?.meta?.git_commit)}</td>
                         <td>
@@ -249,10 +321,10 @@ export function RunsPage() {
                           <span className={statusBadge(st)}>{st || "—"}</span>
                         </td>
                         <td>{formatNumber(weightedOf(run))}</td>
-                        <td>{formatNumber(chartMedians.get(key) ?? null)}</td>
+                        <td>{formatNumber(chartMedians.get(exKey) ?? null)}</td>
                         <td>{exp?.harness?.model_calls ?? "—"}</td>
                         <td>{formatNumber(exp?.efficiency?.wall_seconds)}</td>
-                        <td>{run.data.app_rating ?? "—"}</td>
+                        <td>{human.app_rating ?? "—"}</td>
                       </tr>
                     );
                   })}

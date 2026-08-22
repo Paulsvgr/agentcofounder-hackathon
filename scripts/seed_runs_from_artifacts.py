@@ -62,6 +62,41 @@ ENRICH: dict[str, dict] = {
         "rating": 9,
         "comment": "auto-test; snapshotted in saved-apps",
     },
+    "2026-08-21T23-45-52-404Z": {
+        "approach": "A-autoverify-owned-1",
+        "rating": 9,
+        "comment": "harness-owned soft; SUCCESS ~119k, 32 calls; model still self-tested (~10 turns); harness finalize only",
+    },
+    "2026-08-21T23-58-29-140Z": {
+        "approach": "A-autoverify-owned-2",
+        "rating": 9,
+        "comment": "harness-owned soft; SUCCESS ~133k, 38 calls; stacked self-test + harness verify",
+    },
+    "2026-08-22T00-05-30-093Z": {
+        "approach": "A-autoverify-owned-3",
+        "rating": 9,
+        "comment": "harness-owned soft; SUCCESS ~108k, 38 calls; cheapest owned arm but still above A baseline",
+    },
+    "2026-08-22T00-16-51-819Z": {
+        "approach": "A-autoverify-supplement-1",
+        "rating": 9,
+        "comment": "supplement arm; SUCCESS ~182k, 48 calls; worst cost — model self-tested heavily + harness settle",
+    },
+    "2026-08-22T00-27-06-457Z": {
+        "approach": "A-autoverify-supplement-2",
+        "rating": 9,
+        "comment": "supplement arm; SUCCESS ~157k, 44 calls; stopped cohort at 2 — same stacking pattern",
+    },
+    "2026-08-22T00-48-30-278Z": {
+        "approach": "A-autoverify-owned-gated-1",
+        "rating": 6,
+        "comment": "harness-owned-gated; PARTIAL ~133k, 38 calls; 0 self-test bash but 3 harness repair injects → max_rounds abort",
+    },
+    "2026-08-22T01-09-13-552Z": {
+        "approach": "A-raw-1",
+        "rating": 9,
+        "comment": "back to stock A on main d0f0b49; SUCCESS ~119k, 32 calls; snapshotted in saved-apps",
+    },
     "2026-08-20T21-51-00-219Z": {
         "approach": "A-prime-zai",
         "rating": 9,
@@ -151,7 +186,7 @@ def load_judgments(path: Path) -> dict[str, dict]:
     return out
 
 
-def collect_pastes(exports_dir: Path) -> dict[str, dict]:
+def collect_pastes(exports_dir: Path, runs_dir: Path | None = None) -> dict[str, dict]:
     pastes: dict[str, dict] = {}
     for folder in (exports_dir, exports_dir / "batch"):
         if not folder.is_dir():
@@ -173,6 +208,35 @@ def collect_pastes(exports_dir: Path) -> dict[str, dict]:
             if not rid:
                 rid = fp.stem
             pastes[rid] = data
+
+    if runs_dir and runs_dir.is_dir():
+        for run_folder in sorted(runs_dir.iterdir()):
+            if not run_folder.is_dir():
+                continue
+            run_id = run_folder.name
+            # Prefer v1 export JSON in run folder if present.
+            for name in ("run_export.json", "export.json"):
+                export_fp = run_folder / name
+                if export_fp.is_file():
+                    try:
+                        data = json.loads(export_fp.read_text(encoding="utf-8"))
+                    except (OSError, json.JSONDecodeError):
+                        continue
+                    if isinstance(data, dict):
+                        pastes[run_id] = data
+                        break
+            if run_id in pastes and pastes[run_id].get("schema") == "agentcofounder.run_export.v1":
+                continue
+            result_fp = run_folder / "result.json"
+            if not result_fp.is_file():
+                continue
+            try:
+                data = json.loads(result_fp.read_text(encoding="utf-8"))
+            except (OSError, json.JSONDecodeError):
+                continue
+            if isinstance(data, dict):
+                pastes[run_id] = data
+
     return pastes
 
 
@@ -212,11 +276,12 @@ def main() -> int:
     )
     # Allow Windows path via env; default tries WSL home when run inside WSL.
     exports = root / "artifacts" / "exports"
+    runs_dir = root / "artifacts" / "runs"
     judgments_path = root / "artifacts" / "judgments" / "pilot.jsonl"
 
     judgments = load_judgments(judgments_path)
-    pastes = collect_pastes(exports)
-    print(f"exports={len(pastes)} judgments={len(judgments)} api={API_BASE}")
+    pastes = collect_pastes(exports, runs_dir)
+    print(f"pastes={len(pastes)} judgments={len(judgments)} api={API_BASE}")
 
     ok = 0
     fail = 0

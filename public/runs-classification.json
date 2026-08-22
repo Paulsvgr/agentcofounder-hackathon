@@ -1,0 +1,1119 @@
+{
+  "schema": "agentcofounder.runs_classification.v1",
+  "generated_at": "2026-08-22T06:56:06.439256Z",
+  "description": "Canonical method labels for hackathon runs UI backfill. Overlay by run_id on ingest; wins over derived meta.approach.",
+  "taxonomy": {
+    "line": [
+      "A",
+      "A-prime",
+      "B-prime",
+      "C",
+      "C-prime",
+      "D",
+      "unknown"
+    ],
+    "experiment": [
+      "baseline",
+      "no-dev-server-prompt",
+      "auto-test",
+      "autoverify-off",
+      "autoverify-supplement",
+      "autoverify-owned",
+      "autoverify-gated",
+      "prime-comparison",
+      "legacy",
+      "legacy-smoke",
+      "unknown"
+    ]
+  },
+  "derivation_rules": [
+    "If run_id exists in this manifest, use classification + human fields as canonical.",
+    "Else derive experiment from meta.approach prefix: A-autoverify-owned* \u2192 autoverify-owned, A-autoverify-supplement* \u2192 autoverify-supplement, A-prompt* \u2192 no-dev-server-prompt, A-autotest* \u2192 auto-test, A-baseline* / A-raw* \u2192 baseline.",
+    "Else if git_branch === exp/auto-verify, experiment = autoverify-unknown.",
+    "Else if git_branch === main && git_commit starts with d0f0b49, line = A, experiment = baseline.",
+    "Parse run_index from trailing -N on approach string when present.",
+    "Set flags.exclude_from_ranking when comment contains 'don't rank' or 'not a real attempt', or experiment === legacy-smoke."
+  ],
+  "runs": {
+    "2026-08-18T21-06-12-451Z": {
+      "classification": {
+        "line": "unknown",
+        "experiment": "legacy-smoke",
+        "run_index": null,
+        "display_label": "unknown \u00b7 legacy smoke",
+        "legacy_approach": "unknown"
+      },
+      "human": {
+        "app_rating": null,
+        "run_comment": null
+      },
+      "flags": {
+        "exclude_from_ranking": true,
+        "hide_early_smoke": true,
+        "include_in_efficiency_compare": false
+      },
+      "source": {
+        "git_branch": null,
+        "git_commit": null,
+        "provider": "berget",
+        "model": "Qwen/Qwen3.8-27B-FP8",
+        "harness_status": "partial",
+        "weighted_total": 12828,
+        "model_calls": 3
+      }
+    },
+    "2026-08-18T21-07-03-106Z": {
+      "classification": {
+        "line": "unknown",
+        "experiment": "legacy-smoke",
+        "run_index": null,
+        "display_label": "unknown \u00b7 legacy smoke",
+        "legacy_approach": "unknown"
+      },
+      "human": {
+        "app_rating": null,
+        "run_comment": null
+      },
+      "flags": {
+        "exclude_from_ranking": true,
+        "hide_early_smoke": true,
+        "include_in_efficiency_compare": false
+      },
+      "source": {
+        "git_branch": null,
+        "git_commit": null,
+        "provider": "berget",
+        "model": "zai-org/GLM-5.2",
+        "harness_status": "partial",
+        "weighted_total": 15839,
+        "model_calls": 7
+      }
+    },
+    "2026-08-18T21-09-25-539Z": {
+      "classification": {
+        "line": "unknown",
+        "experiment": "legacy-smoke",
+        "run_index": null,
+        "display_label": "unknown \u00b7 legacy smoke",
+        "legacy_approach": "unknown"
+      },
+      "human": {
+        "app_rating": null,
+        "run_comment": null
+      },
+      "flags": {
+        "exclude_from_ranking": true,
+        "hide_early_smoke": true,
+        "include_in_efficiency_compare": false
+      },
+      "source": {
+        "git_branch": null,
+        "git_commit": null,
+        "provider": "berget",
+        "model": "zai-org/GLM-5.2",
+        "harness_status": "partial",
+        "weighted_total": 88442,
+        "model_calls": 20
+      }
+    },
+    "2026-08-18T21-59-11-832Z": {
+      "classification": {
+        "line": "unknown",
+        "experiment": "legacy-smoke",
+        "run_index": null,
+        "display_label": "unknown \u00b7 legacy smoke",
+        "legacy_approach": "unknown"
+      },
+      "human": {
+        "app_rating": null,
+        "run_comment": null
+      },
+      "flags": {
+        "exclude_from_ranking": true,
+        "hide_early_smoke": true,
+        "include_in_efficiency_compare": false
+      },
+      "source": {
+        "git_branch": null,
+        "git_commit": null,
+        "provider": "berget",
+        "model": "Qwen/Qwen3.8-27B-FP8",
+        "harness_status": "partial",
+        "weighted_total": 65003,
+        "model_calls": 4
+      }
+    },
+    "2026-08-18T22-08-41-490Z": {
+      "classification": {
+        "line": "unknown",
+        "experiment": "legacy-smoke",
+        "run_index": null,
+        "display_label": "unknown \u00b7 legacy smoke",
+        "legacy_approach": "unknown"
+      },
+      "human": {
+        "app_rating": null,
+        "run_comment": null
+      },
+      "flags": {
+        "exclude_from_ranking": true,
+        "hide_early_smoke": true,
+        "include_in_efficiency_compare": false
+      },
+      "source": {
+        "git_branch": null,
+        "git_commit": null,
+        "provider": "berget",
+        "model": "zai-org/GLM-5.2",
+        "harness_status": "partial",
+        "weighted_total": 3771,
+        "model_calls": 3
+      }
+    },
+    "2026-08-18T22-11-14-578Z": {
+      "classification": {
+        "line": "unknown",
+        "experiment": "legacy-smoke",
+        "run_index": null,
+        "display_label": "unknown \u00b7 legacy smoke",
+        "legacy_approach": "unknown"
+      },
+      "human": {
+        "app_rating": null,
+        "run_comment": null
+      },
+      "flags": {
+        "exclude_from_ranking": true,
+        "hide_early_smoke": true,
+        "include_in_efficiency_compare": false
+      },
+      "source": {
+        "git_branch": null,
+        "git_commit": null,
+        "provider": "berget",
+        "model": "zai-org/GLM-5.2",
+        "harness_status": "partial",
+        "weighted_total": 4254,
+        "model_calls": 3
+      }
+    },
+    "2026-08-19T13-29-23-872Z": {
+      "classification": {
+        "line": "unknown",
+        "experiment": "legacy-smoke",
+        "run_index": null,
+        "display_label": "unknown \u00b7 legacy smoke",
+        "legacy_approach": "unknown"
+      },
+      "human": {
+        "app_rating": null,
+        "run_comment": null
+      },
+      "flags": {
+        "exclude_from_ranking": true,
+        "hide_early_smoke": true,
+        "include_in_efficiency_compare": false
+      },
+      "source": {
+        "git_branch": null,
+        "git_commit": null,
+        "provider": "berget",
+        "model": "zai-org/GLM-5.2",
+        "harness_status": "partial",
+        "weighted_total": 69431,
+        "model_calls": 5
+      }
+    },
+    "2026-08-19T14-41-47-743Z": {
+      "classification": {
+        "line": "unknown",
+        "experiment": "legacy-smoke",
+        "run_index": null,
+        "display_label": "unknown \u00b7 legacy smoke",
+        "legacy_approach": "unknown"
+      },
+      "human": {
+        "app_rating": null,
+        "run_comment": null
+      },
+      "flags": {
+        "exclude_from_ranking": true,
+        "hide_early_smoke": true,
+        "include_in_efficiency_compare": false
+      },
+      "source": {
+        "git_branch": null,
+        "git_commit": null,
+        "provider": "berget",
+        "model": "zai-org/GLM-5.2",
+        "harness_status": "partial",
+        "weighted_total": 156177,
+        "model_calls": 48
+      }
+    },
+    "2026-08-19T21-36-13-008Z": {
+      "classification": {
+        "line": "A",
+        "experiment": "legacy",
+        "run_index": null,
+        "display_label": "A \u00b7 legacy",
+        "legacy_approach": "A-original"
+      },
+      "human": {
+        "app_rating": 9,
+        "run_comment": "early SUCCESS ~10 min"
+      },
+      "flags": {
+        "exclude_from_ranking": false,
+        "hide_early_smoke": false,
+        "include_in_efficiency_compare": true
+      },
+      "source": {
+        "git_branch": null,
+        "git_commit": null,
+        "provider": "berget",
+        "model": "zai-org/GLM-5.2",
+        "harness_status": "partial",
+        "weighted_total": 74556,
+        "model_calls": 15
+      }
+    },
+    "2026-08-19T22-06-24-214Z": {
+      "classification": {
+        "line": "unknown",
+        "experiment": "legacy-smoke",
+        "run_index": null,
+        "display_label": "unknown \u00b7 legacy smoke",
+        "legacy_approach": "unknown"
+      },
+      "human": {
+        "app_rating": null,
+        "run_comment": null
+      },
+      "flags": {
+        "exclude_from_ranking": true,
+        "hide_early_smoke": true,
+        "include_in_efficiency_compare": false
+      },
+      "source": {
+        "git_branch": null,
+        "git_commit": null,
+        "provider": "berget",
+        "model": "zai-org/GLM-5.2",
+        "harness_status": "partial",
+        "weighted_total": 72835,
+        "model_calls": 20
+      }
+    },
+    "2026-08-19T23-05-29-779Z": {
+      "classification": {
+        "line": "C",
+        "experiment": "legacy",
+        "run_index": 1,
+        "display_label": "C \u00b7 legacy \u00b7 run 1",
+        "legacy_approach": "C-original"
+      },
+      "human": {
+        "app_rating": 6,
+        "run_comment": "SUCCESS; localStorage issue noted"
+      },
+      "flags": {
+        "exclude_from_ranking": false,
+        "hide_early_smoke": false,
+        "include_in_efficiency_compare": true
+      },
+      "source": {
+        "git_branch": null,
+        "git_commit": null,
+        "provider": "berget",
+        "model": "zai-org/GLM-5.2",
+        "harness_status": "partial",
+        "weighted_total": 141148,
+        "model_calls": 14
+      }
+    },
+    "2026-08-19T23-33-32-518Z": {
+      "classification": {
+        "line": "D",
+        "experiment": "legacy",
+        "run_index": 1,
+        "display_label": "D \u00b7 legacy \u00b7 run 1",
+        "legacy_approach": "run-d / D"
+      },
+      "human": {
+        "app_rating": 9,
+        "run_comment": "harness timeout, product great (snapshotted)"
+      },
+      "flags": {
+        "exclude_from_ranking": false,
+        "hide_early_smoke": false,
+        "include_in_efficiency_compare": true
+      },
+      "source": {
+        "git_branch": null,
+        "git_commit": null,
+        "provider": "berget",
+        "model": "zai-org/GLM-5.2",
+        "harness_status": "partial",
+        "weighted_total": 117962,
+        "model_calls": 8
+      }
+    },
+    "2026-08-20T19-13-05-181Z": {
+      "classification": {
+        "line": "A-prime",
+        "experiment": "prime-comparison",
+        "run_index": 1,
+        "display_label": "A-prime \u00b7 prime comparison \u00b7 run 1",
+        "legacy_approach": "A-prime"
+      },
+      "human": {
+        "app_rating": 6,
+        "run_comment": "timed out in RTL loop; no report.partial"
+      },
+      "flags": {
+        "exclude_from_ranking": false,
+        "hide_early_smoke": false,
+        "include_in_efficiency_compare": true
+      },
+      "source": {
+        "git_branch": null,
+        "git_commit": null,
+        "provider": "berget",
+        "model": "zai-org/GLM-5.2",
+        "harness_status": "partial",
+        "weighted_total": 120441,
+        "model_calls": 22
+      }
+    },
+    "2026-08-20T19-28-31-545Z": {
+      "classification": {
+        "line": "B-prime",
+        "experiment": "prime-comparison",
+        "run_index": 1,
+        "display_label": "B-prime \u00b7 prime comparison \u00b7 run 1",
+        "legacy_approach": "B-prime"
+      },
+      "human": {
+        "app_rating": 9,
+        "run_comment": "Berget SUCCESS ~63k; product great"
+      },
+      "flags": {
+        "exclude_from_ranking": false,
+        "hide_early_smoke": false,
+        "include_in_efficiency_compare": true
+      },
+      "source": {
+        "git_branch": null,
+        "git_commit": null,
+        "provider": "berget",
+        "model": "zai-org/GLM-5.2",
+        "harness_status": "partial",
+        "weighted_total": 63211,
+        "model_calls": 21
+      }
+    },
+    "2026-08-20T19-53-20-342Z": {
+      "classification": {
+        "line": "C-prime",
+        "experiment": "legacy-smoke",
+        "run_index": null,
+        "display_label": "C-prime \u00b7 legacy smoke",
+        "legacy_approach": "C-prime abort"
+      },
+      "human": {
+        "app_rating": 2,
+        "run_comment": "Pi API abort, 0 tokens \u2014 not a real attempt"
+      },
+      "flags": {
+        "exclude_from_ranking": true,
+        "hide_early_smoke": false,
+        "include_in_efficiency_compare": false
+      },
+      "source": {
+        "git_branch": null,
+        "git_commit": null,
+        "provider": "berget",
+        "model": "zai-org/GLM-5.2",
+        "harness_status": "partial",
+        "weighted_total": 0,
+        "model_calls": 1
+      }
+    },
+    "2026-08-20T19-53-59-239Z": {
+      "classification": {
+        "line": "C-prime",
+        "experiment": "legacy-smoke",
+        "run_index": null,
+        "display_label": "C-prime \u00b7 legacy smoke",
+        "legacy_approach": "C-prime abort"
+      },
+      "human": {
+        "app_rating": 2,
+        "run_comment": "Pi API abort, 0 tokens \u2014 not a real attempt"
+      },
+      "flags": {
+        "exclude_from_ranking": true,
+        "hide_early_smoke": false,
+        "include_in_efficiency_compare": false
+      },
+      "source": {
+        "git_branch": null,
+        "git_commit": null,
+        "provider": "berget",
+        "model": "zai-org/GLM-5.2",
+        "harness_status": "partial",
+        "weighted_total": 0,
+        "model_calls": 1
+      }
+    },
+    "2026-08-20T20-09-27-922Z": {
+      "classification": {
+        "line": "C-prime",
+        "experiment": "legacy-smoke",
+        "run_index": null,
+        "display_label": "C-prime \u00b7 legacy smoke",
+        "legacy_approach": "C-prime abort"
+      },
+      "human": {
+        "app_rating": 2,
+        "run_comment": "Pi API abort, 0 tokens \u2014 not a real attempt"
+      },
+      "flags": {
+        "exclude_from_ranking": true,
+        "hide_early_smoke": false,
+        "include_in_efficiency_compare": false
+      },
+      "source": {
+        "git_branch": null,
+        "git_commit": null,
+        "provider": "openai",
+        "model": "zai-org/GLM-5.2",
+        "harness_status": "partial",
+        "weighted_total": 0,
+        "model_calls": 1
+      }
+    },
+    "2026-08-20T20-09-54-516Z": {
+      "classification": {
+        "line": "C-prime",
+        "experiment": "prime-comparison",
+        "run_index": 1,
+        "display_label": "C-prime \u00b7 prime comparison \u00b7 run 1",
+        "legacy_approach": "C-prime-openai"
+      },
+      "human": {
+        "app_rating": 9,
+        "run_comment": "gpt-5.2 too strong vs GLM \u2014 don't rank"
+      },
+      "flags": {
+        "exclude_from_ranking": true,
+        "hide_early_smoke": false,
+        "include_in_efficiency_compare": false
+      },
+      "source": {
+        "git_branch": null,
+        "git_commit": null,
+        "provider": "openai",
+        "model": "gpt-5.2",
+        "harness_status": "partial",
+        "weighted_total": 163272,
+        "model_calls": 23
+      }
+    },
+    "2026-08-20T20-50-03-927Z": {
+      "classification": {
+        "line": "C-prime",
+        "experiment": "prime-comparison",
+        "run_index": 1,
+        "display_label": "C-prime \u00b7 prime comparison \u00b7 run 1",
+        "legacy_approach": "C-prime-gpt41-attempt"
+      },
+      "human": {
+        "app_rating": 2,
+        "run_comment": "aborted TPM / RTL thrash"
+      },
+      "flags": {
+        "exclude_from_ranking": true,
+        "hide_early_smoke": false,
+        "include_in_efficiency_compare": false
+      },
+      "source": {
+        "git_branch": null,
+        "git_commit": null,
+        "provider": "openai",
+        "model": "gpt-4.1",
+        "harness_status": "partial",
+        "weighted_total": 233467,
+        "model_calls": 33
+      }
+    },
+    "2026-08-20T20-54-36-625Z": {
+      "classification": {
+        "line": "C-prime",
+        "experiment": "prime-comparison",
+        "run_index": 1,
+        "display_label": "C-prime \u00b7 prime comparison \u00b7 run 1",
+        "legacy_approach": "C-prime-gpt41"
+      },
+      "human": {
+        "app_rating": 6,
+        "run_comment": "works but bare UI; ~262k"
+      },
+      "flags": {
+        "exclude_from_ranking": false,
+        "hide_early_smoke": false,
+        "include_in_efficiency_compare": true
+      },
+      "source": {
+        "git_branch": null,
+        "git_commit": null,
+        "provider": "openai",
+        "model": "gpt-4.1",
+        "harness_status": "partial",
+        "weighted_total": 261835,
+        "model_calls": 54
+      }
+    },
+    "2026-08-20T21-41-20-112Z": {
+      "classification": {
+        "line": "C-prime",
+        "experiment": "prime-comparison",
+        "run_index": 1,
+        "display_label": "C-prime \u00b7 prime comparison \u00b7 run 1",
+        "legacy_approach": "C-prime-zai"
+      },
+      "human": {
+        "app_rating": 9,
+        "run_comment": "failed only because :3000 opened mid-verify \u2014 don't rank"
+      },
+      "flags": {
+        "exclude_from_ranking": true,
+        "hide_early_smoke": false,
+        "include_in_efficiency_compare": false
+      },
+      "source": {
+        "git_branch": null,
+        "git_commit": null,
+        "provider": "zai",
+        "model": "glm-5.2",
+        "harness_status": "partial",
+        "weighted_total": 284954,
+        "model_calls": 34
+      }
+    },
+    "2026-08-20T21-51-00-219Z": {
+      "classification": {
+        "line": "A-prime",
+        "experiment": "prime-comparison",
+        "run_index": 1,
+        "display_label": "A-prime \u00b7 prime comparison \u00b7 run 1",
+        "legacy_approach": "A-prime-zai"
+      },
+      "human": {
+        "app_rating": 9,
+        "run_comment": "Best A\u2032: SUCCESS ~85k, 16/16 tests, clean UI"
+      },
+      "flags": {
+        "exclude_from_ranking": false,
+        "hide_early_smoke": false,
+        "include_in_efficiency_compare": true
+      },
+      "source": {
+        "git_branch": null,
+        "git_commit": null,
+        "provider": "zai",
+        "model": "glm-5.2",
+        "harness_status": "success",
+        "weighted_total": 84561,
+        "model_calls": 27
+      }
+    },
+    "2026-08-20T21-54-53-923Z": {
+      "classification": {
+        "line": "B-prime",
+        "experiment": "prime-comparison",
+        "run_index": 1,
+        "display_label": "B-prime \u00b7 prime comparison \u00b7 run 1",
+        "legacy_approach": "B-prime-zai"
+      },
+      "human": {
+        "app_rating": 9,
+        "run_comment": "SUCCESS ~139k, 20/20, inline lend"
+      },
+      "flags": {
+        "exclude_from_ranking": false,
+        "hide_early_smoke": false,
+        "include_in_efficiency_compare": true
+      },
+      "source": {
+        "git_branch": null,
+        "git_commit": null,
+        "provider": "zai",
+        "model": "glm-5.2",
+        "harness_status": "success",
+        "weighted_total": 139265,
+        "model_calls": 37
+      }
+    },
+    "2026-08-20T22-00-59-263Z": {
+      "classification": {
+        "line": "C-prime",
+        "experiment": "prime-comparison",
+        "run_index": 1,
+        "display_label": "C-prime \u00b7 prime comparison \u00b7 run 1",
+        "legacy_approach": "C-prime-zai-clean"
+      },
+      "human": {
+        "app_rating": 9,
+        "run_comment": "SUCCESS ~255k; port kept free"
+      },
+      "flags": {
+        "exclude_from_ranking": false,
+        "hide_early_smoke": false,
+        "include_in_efficiency_compare": true
+      },
+      "source": {
+        "git_branch": null,
+        "git_commit": null,
+        "provider": "zai",
+        "model": "glm-5.2",
+        "harness_status": "success",
+        "weighted_total": 255393,
+        "model_calls": 31
+      }
+    },
+    "2026-08-21T17-12-43-573Z": {
+      "classification": {
+        "line": "A",
+        "experiment": "baseline",
+        "run_index": 1,
+        "display_label": "A \u00b7 baseline \u00b7 run 1",
+        "legacy_approach": "A-baseline-1"
+      },
+      "human": {
+        "app_rating": 9,
+        "run_comment": "A baseline, zai glm-5.2, unchanged d0f0b49"
+      },
+      "flags": {
+        "exclude_from_ranking": false,
+        "hide_early_smoke": false,
+        "include_in_efficiency_compare": true
+      },
+      "source": {
+        "git_branch": null,
+        "git_commit": null,
+        "provider": "zai",
+        "model": "glm-5.2",
+        "harness_status": "success",
+        "weighted_total": 73942,
+        "model_calls": 24
+      }
+    },
+    "2026-08-21T17-16-01-144Z": {
+      "classification": {
+        "line": "A",
+        "experiment": "baseline",
+        "run_index": 2,
+        "display_label": "A \u00b7 baseline \u00b7 run 2",
+        "legacy_approach": "A-baseline-2"
+      },
+      "human": {
+        "app_rating": 9,
+        "run_comment": "A baseline, zai glm-5.2, unchanged d0f0b49"
+      },
+      "flags": {
+        "exclude_from_ranking": false,
+        "hide_early_smoke": false,
+        "include_in_efficiency_compare": true
+      },
+      "source": {
+        "git_branch": null,
+        "git_commit": null,
+        "provider": "zai",
+        "model": "glm-5.2",
+        "harness_status": "success",
+        "weighted_total": 96661,
+        "model_calls": 31
+      }
+    },
+    "2026-08-21T17-19-47-720Z": {
+      "classification": {
+        "line": "A",
+        "experiment": "baseline",
+        "run_index": 3,
+        "display_label": "A \u00b7 baseline \u00b7 run 3",
+        "legacy_approach": "A-baseline-3"
+      },
+      "human": {
+        "app_rating": 9,
+        "run_comment": "A baseline, zai glm-5.2, unchanged d0f0b49"
+      },
+      "flags": {
+        "exclude_from_ranking": false,
+        "hide_early_smoke": false,
+        "include_in_efficiency_compare": true
+      },
+      "source": {
+        "git_branch": null,
+        "git_commit": null,
+        "provider": "zai",
+        "model": "glm-5.2",
+        "harness_status": "success",
+        "weighted_total": 90050,
+        "model_calls": 23
+      }
+    },
+    "2026-08-21T17-25-01-445Z": {
+      "classification": {
+        "line": "A",
+        "experiment": "no-dev-server-prompt",
+        "run_index": 1,
+        "display_label": "A \u00b7 no dev server prompt \u00b7 run 1",
+        "legacy_approach": "A-prompt-1"
+      },
+      "human": {
+        "app_rating": 9,
+        "run_comment": "do-not-start-servers prompt (cost went up)"
+      },
+      "flags": {
+        "exclude_from_ranking": false,
+        "hide_early_smoke": false,
+        "include_in_efficiency_compare": true
+      },
+      "source": {
+        "git_branch": null,
+        "git_commit": null,
+        "provider": "zai",
+        "model": "glm-5.2",
+        "harness_status": "success",
+        "weighted_total": 118680,
+        "model_calls": 33
+      }
+    },
+    "2026-08-21T17-29-18-522Z": {
+      "classification": {
+        "line": "A",
+        "experiment": "no-dev-server-prompt",
+        "run_index": 2,
+        "display_label": "A \u00b7 no dev server prompt \u00b7 run 2",
+        "legacy_approach": "A-prompt-2"
+      },
+      "human": {
+        "app_rating": 9,
+        "run_comment": "do-not-start-servers prompt (cost went up)"
+      },
+      "flags": {
+        "exclude_from_ranking": false,
+        "hide_early_smoke": false,
+        "include_in_efficiency_compare": true
+      },
+      "source": {
+        "git_branch": null,
+        "git_commit": null,
+        "provider": "zai",
+        "model": "glm-5.2",
+        "harness_status": "success",
+        "weighted_total": 116483,
+        "model_calls": 29
+      }
+    },
+    "2026-08-21T17-33-44-063Z": {
+      "classification": {
+        "line": "A",
+        "experiment": "no-dev-server-prompt",
+        "run_index": 3,
+        "display_label": "A \u00b7 no dev server prompt \u00b7 run 3",
+        "legacy_approach": "A-prompt-3"
+      },
+      "human": {
+        "app_rating": 9,
+        "run_comment": "do-not-start-servers prompt (heaviest ~187k)"
+      },
+      "flags": {
+        "exclude_from_ranking": false,
+        "hide_early_smoke": false,
+        "include_in_efficiency_compare": true
+      },
+      "source": {
+        "git_branch": null,
+        "git_commit": null,
+        "provider": "zai",
+        "model": "glm-5.2",
+        "harness_status": "success",
+        "weighted_total": 187108,
+        "model_calls": 51
+      }
+    },
+    "2026-08-21T17-41-28-455Z": {
+      "classification": {
+        "line": "A",
+        "experiment": "auto-test",
+        "run_index": 1,
+        "display_label": "A \u00b7 auto test \u00b7 run 1",
+        "legacy_approach": "A-autotest-1"
+      },
+      "human": {
+        "app_rating": 9,
+        "run_comment": "auto-test hook; lucky low ~54k"
+      },
+      "flags": {
+        "exclude_from_ranking": false,
+        "hide_early_smoke": false,
+        "include_in_efficiency_compare": true
+      },
+      "source": {
+        "git_branch": null,
+        "git_commit": null,
+        "provider": "zai",
+        "model": "glm-5.2",
+        "harness_status": "success",
+        "weighted_total": 54163,
+        "model_calls": 13
+      }
+    },
+    "2026-08-21T17-44-12-352Z": {
+      "classification": {
+        "line": "A",
+        "experiment": "auto-test",
+        "run_index": 2,
+        "display_label": "A \u00b7 auto test \u00b7 run 2",
+        "legacy_approach": "A-autotest-2"
+      },
+      "human": {
+        "app_rating": 9,
+        "run_comment": "auto-test"
+      },
+      "flags": {
+        "exclude_from_ranking": false,
+        "hide_early_smoke": false,
+        "include_in_efficiency_compare": true
+      },
+      "source": {
+        "git_branch": null,
+        "git_commit": null,
+        "provider": "zai",
+        "model": "glm-5.2",
+        "harness_status": "success",
+        "weighted_total": 108272,
+        "model_calls": 26
+      }
+    },
+    "2026-08-21T17-49-43-616Z": {
+      "classification": {
+        "line": "A",
+        "experiment": "auto-test",
+        "run_index": 3,
+        "display_label": "A \u00b7 auto test \u00b7 run 3",
+        "legacy_approach": "A-autotest-3"
+      },
+      "human": {
+        "app_rating": 9,
+        "run_comment": "auto-test; snapshotted in saved-apps"
+      },
+      "flags": {
+        "exclude_from_ranking": false,
+        "hide_early_smoke": false,
+        "include_in_efficiency_compare": true
+      },
+      "source": {
+        "git_branch": null,
+        "git_commit": null,
+        "provider": "zai",
+        "model": "glm-5.2",
+        "harness_status": "success",
+        "weighted_total": 112940,
+        "model_calls": 26
+      }
+    },
+    "2026-08-21T23-45-52-404Z": {
+      "classification": {
+        "line": "A",
+        "experiment": "autoverify-owned",
+        "run_index": 1,
+        "display_label": "A \u00b7 autoverify owned \u00b7 run 1",
+        "legacy_approach": "A-autoverify-owned-1"
+      },
+      "human": {
+        "app_rating": 9,
+        "run_comment": "harness-owned soft; SUCCESS ~119k, 32 calls; model still self-tested (~10 turns); harness finalize only"
+      },
+      "flags": {
+        "exclude_from_ranking": false,
+        "hide_early_smoke": false,
+        "include_in_efficiency_compare": true
+      },
+      "source": {
+        "git_branch": "exp/auto-verify",
+        "git_commit": "1641fb4e2e64ad39c4f4e84f8701ccb08937d6d5",
+        "provider": "zai",
+        "model": "glm-5.2",
+        "harness_status": "success",
+        "weighted_total": 119362,
+        "model_calls": 32
+      }
+    },
+    "2026-08-21T23-58-29-140Z": {
+      "classification": {
+        "line": "A",
+        "experiment": "autoverify-owned",
+        "run_index": 2,
+        "display_label": "A \u00b7 autoverify owned \u00b7 run 2",
+        "legacy_approach": "A-autoverify-owned-2"
+      },
+      "human": {
+        "app_rating": 9,
+        "run_comment": "harness-owned soft; SUCCESS ~133k, 38 calls; stacked self-test + harness verify"
+      },
+      "flags": {
+        "exclude_from_ranking": false,
+        "hide_early_smoke": false,
+        "include_in_efficiency_compare": true
+      },
+      "source": {
+        "git_branch": "exp/auto-verify",
+        "git_commit": "1641fb4e2e64ad39c4f4e84f8701ccb08937d6d5",
+        "provider": "zai",
+        "model": "glm-5.2",
+        "harness_status": "success",
+        "weighted_total": 133212,
+        "model_calls": 38
+      }
+    },
+    "2026-08-22T00-05-30-093Z": {
+      "classification": {
+        "line": "A",
+        "experiment": "autoverify-owned",
+        "run_index": 3,
+        "display_label": "A \u00b7 autoverify owned \u00b7 run 3",
+        "legacy_approach": "A-autoverify-owned-3"
+      },
+      "human": {
+        "app_rating": 9,
+        "run_comment": "harness-owned soft; SUCCESS ~108k, 38 calls; cheapest owned arm but still above A baseline"
+      },
+      "flags": {
+        "exclude_from_ranking": false,
+        "hide_early_smoke": false,
+        "include_in_efficiency_compare": true
+      },
+      "source": {
+        "git_branch": "exp/auto-verify",
+        "git_commit": "1641fb4e2e64ad39c4f4e84f8701ccb08937d6d5",
+        "provider": "zai",
+        "model": "glm-5.2",
+        "harness_status": "success",
+        "weighted_total": 108039,
+        "model_calls": 38
+      }
+    },
+    "2026-08-22T00-16-51-819Z": {
+      "classification": {
+        "line": "A",
+        "experiment": "autoverify-supplement",
+        "run_index": 1,
+        "display_label": "A \u00b7 autoverify supplement \u00b7 run 1",
+        "legacy_approach": "A-autoverify-supplement-1"
+      },
+      "human": {
+        "app_rating": 9,
+        "run_comment": "supplement arm; SUCCESS ~182k, 48 calls; worst cost \u2014 model self-tested heavily + harness settle"
+      },
+      "flags": {
+        "exclude_from_ranking": false,
+        "hide_early_smoke": false,
+        "include_in_efficiency_compare": true
+      },
+      "source": {
+        "git_branch": "exp/auto-verify",
+        "git_commit": "1641fb4e2e64ad39c4f4e84f8701ccb08937d6d5",
+        "provider": "zai",
+        "model": "glm-5.2",
+        "harness_status": "success",
+        "weighted_total": 182286,
+        "model_calls": 48
+      }
+    },
+    "2026-08-22T00-27-06-457Z": {
+      "classification": {
+        "line": "A",
+        "experiment": "autoverify-supplement",
+        "run_index": 2,
+        "display_label": "A \u00b7 autoverify supplement \u00b7 run 2",
+        "legacy_approach": "A-autoverify-supplement-2"
+      },
+      "human": {
+        "app_rating": 9,
+        "run_comment": "supplement arm; SUCCESS ~157k, 44 calls; stopped cohort at 2 \u2014 same stacking pattern"
+      },
+      "flags": {
+        "exclude_from_ranking": false,
+        "hide_early_smoke": false,
+        "include_in_efficiency_compare": true
+      },
+      "source": {
+        "git_branch": "exp/auto-verify",
+        "git_commit": "1641fb4e2e64ad39c4f4e84f8701ccb08937d6d5",
+        "provider": "zai",
+        "model": "glm-5.2",
+        "harness_status": "success",
+        "weighted_total": 156533,
+        "model_calls": 44
+      }
+    },
+    "2026-08-22T00-48-30-278Z": {
+      "classification": {
+        "line": "A",
+        "experiment": "autoverify-gated",
+        "run_index": 1,
+        "display_label": "A \u00b7 autoverify gated \u00b7 run 1",
+        "legacy_approach": "A-autoverify-owned-gated-1"
+      },
+      "human": {
+        "app_rating": 6,
+        "run_comment": "harness-owned-gated; PARTIAL ~133k, 38 calls; 0 self-test bash but 3 harness repair injects \u2192 max_rounds abort"
+      },
+      "flags": {
+        "exclude_from_ranking": true,
+        "hide_early_smoke": false,
+        "include_in_efficiency_compare": false
+      },
+      "source": {
+        "git_branch": "exp/auto-verify",
+        "git_commit": "5e969416e9216e6f68ec9fffc8e12f2869119d2a",
+        "provider": "zai",
+        "model": "glm-5.2",
+        "harness_status": "partial",
+        "weighted_total": 133207,
+        "model_calls": 38
+      }
+    },
+    "2026-08-22T01-09-13-552Z": {
+      "classification": {
+        "line": "A",
+        "experiment": "baseline",
+        "run_index": 1,
+        "display_label": "A \u00b7 baseline \u00b7 run 1",
+        "legacy_approach": "A-raw-1"
+      },
+      "human": {
+        "app_rating": 9,
+        "run_comment": "back to stock A on main d0f0b49; SUCCESS ~119k, 32 calls; snapshotted in saved-apps"
+      },
+      "flags": {
+        "exclude_from_ranking": false,
+        "hide_early_smoke": false,
+        "include_in_efficiency_compare": true
+      },
+      "source": {
+        "git_branch": null,
+        "git_commit": null,
+        "provider": null,
+        "model": null,
+        "harness_status": "success",
+        "weighted_total": 118870,
+        "model_calls": 32
+      }
+    }
+  }
+}

@@ -566,6 +566,28 @@ table.runs tbody tr:hover {
   color: var(--text);
 }
 
+.field-multi select {
+  min-height: 5.5rem;
+}
+
+.filter-chips {
+  margin: 0 0 1rem;
+}
+
+.chip-btn {
+  cursor: pointer;
+  border-radius: 999px;
+  padding: 0.2rem 0.55rem;
+  font-size: 0.75rem;
+  border: 1px solid var(--line);
+  background: var(--bg-2);
+  font: inherit;
+}
+
+.chip-btn:hover {
+  border-color: var(--accent);
+}
+
 .stat-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));

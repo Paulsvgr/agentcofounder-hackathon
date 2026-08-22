@@ -1,4 +1,5 @@
 import type { HackathonRunRecord } from "../types/runExport";
+import { experimentKey } from "./classification";
 
 export function median(values: number[]): number | null {
   if (values.length === 0) return null;
@@ -24,6 +25,27 @@ export function approachKey(run: HackathonRunRecord): string {
 export function weightedOf(run: HackathonRunRecord): number | null {
   const w = run.data.export?.efficiency?.weighted_total;
   return typeof w === "number" ? w : null;
+}
+
+/** Median weighted_total grouped by structured experiment. */
+export function medianWeightedByExperiment(
+  runs: HackathonRunRecord[],
+): Map<string, number> {
+  const buckets = new Map<string, number[]>();
+  for (const run of runs) {
+    const key = experimentKey(run);
+    const w = weightedOf(run);
+    if (w === null) continue;
+    const list = buckets.get(key) ?? [];
+    list.push(w);
+    buckets.set(key, list);
+  }
+  const out = new Map<string, number>();
+  for (const [key, vals] of buckets) {
+    const m = median(vals);
+    if (m !== null) out.set(key, m);
+  }
+  return out;
 }
 
 /** Median weighted_total for runs sharing the same approach / branch. */

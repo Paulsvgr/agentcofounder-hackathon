@@ -15,6 +15,41 @@ export type PhaseBucket = {
   share_of_total: number;
 };
 
+export type ClassificationLine = "A" | "A-prime" | "B-prime" | "C" | "C-prime" | "D" | "unknown";
+
+export type ClassificationExperiment =
+  | "baseline"
+  | "no-dev-server-prompt"
+  | "auto-test"
+  | "autoverify-off"
+  | "autoverify-supplement"
+  | "autoverify-owned"
+  | "autoverify-gated"
+  | "prime-comparison"
+  | "legacy"
+  | "legacy-smoke"
+  | "unknown";
+
+export type RunClassification = {
+  line: ClassificationLine;
+  experiment: ClassificationExperiment;
+  run_index: number | null;
+  display_label: string;
+  legacy_approach: string;
+};
+
+export type RunFlags = {
+  exclude_from_ranking: boolean;
+  hide_early_smoke: boolean;
+  include_in_efficiency_compare: boolean;
+};
+
+export type RunHuman = {
+  app_rating: number | null;
+  app_comment: string;
+  run_comment: string;
+};
+
 export type RunExport = {
   schema: typeof RUN_EXPORT_SCHEMA;
   meta: {
@@ -88,6 +123,9 @@ export type HackathonRunData = {
   app_comment: string;
   run_comment: string;
   paste_kind?: string;
+  classification?: RunClassification;
+  human?: RunHuman;
+  flags?: RunFlags;
   export: RunExport;
 };
 
