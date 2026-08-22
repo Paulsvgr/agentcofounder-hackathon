@@ -18,7 +18,16 @@ v1 runs show **legacy v1** badge and collapsed phase heuristic.
 
 ## Cohort
 
-`/cohort` — 7-run study preset (baseline, autotest floor, prompt snowball, autoverify, A-prime).
+`/cohort` — preset switcher:
+
+- `study` (default) — 7-run baseline / autoverify / snowball set
+- `exp1-rtl` — Experiment 1 rtl-control vs rtl-cleanup (10 runs)
+
+## Publish to prod
+
+Harness (WSL): `npm run publish:runs -- --exp1-rtl` — re-export, sync manifest, seed, backfill.
+
+This repo: `npm run seed:exp1-rtl` + `npm run backfill:classification` (requires `AGENTCOFOUNDER_ROOT` + `HACKATHON_ACCESS_CODE`).
 
 ## Dev fixtures
 

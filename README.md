@@ -47,18 +47,34 @@ Do **not** add `HACKATHON_ACCESS_CODE` to Vercel — that stays on webeditor onl
 
 Accepts:
 
-1. Preferred `agentcofounder.run_export.v1` (`schema` / `meta` / `harness` / `efficiency`)
-2. Legacy harness `result.json` — UI asks for approach / provider / model / run id; server normalizes to v1
+1. Preferred `agentcofounder.run_export.v2` — includes `efficiency.action_flow[]` for run-detail charts
+2. Legacy `agentcofounder.run_export.v1` (`schema` / `meta` / `harness` / `efficiency`)
+3. Legacy harness `result.json` — UI asks for approach / provider / model / run id; server normalizes to v1
 
 Never stores raw `result.json`. See [`docs/ACCEPT_PASTE_FORMATS.md`](./docs/ACCEPT_PASTE_FORMATS.md).
 
-Sample: [`public/sample-run-export.json`](./public/sample-run-export.json)
+Sample v2 fixtures: [`public/fixtures/`](./public/fixtures/)
 
 Human fields (`app_rating`, `app_comment`, `run_comment`) are UI/DB only — not in the export file.
 
-Harness export (on `setup/measure`) should set structured `--approach` labels (e.g. `A-baseline-1`) and emit `meta.classification`. See [`scripts/harness-export-run.patch.md`](./scripts/harness-export-run.patch.md).
+Harness export (on `setup/measure`) should set structured `--approach` labels (e.g. `A-baseline-1`, `rtl-control-3`) and emit `meta.classification`. See [`scripts/harness-export-run.patch.md`](./scripts/harness-export-run.patch.md).
 
-In the app, open **How to export** (`/how-to`) for the full harness steps (`setup/measure` → analyze → `export:run`).
+In the app: **How to export** (`/how-to`), **Cohort** (`/cohort?preset=exp1-rtl`), **Steps plan** (`/steps.html`).
+
+### Bulk publish (WSL harness → prod DB)
+
+```bash
+export HACKATHON_ACCESS_CODE='…'
+export HACKATHON_AUTHOR=paul
+npm run publish:runs -- --exp1-rtl   # harness repo
+```
+
+Or from this repo after exports exist on WSL:
+
+```bash
+npm run seed:exp1-rtl
+npm run backfill:classification
+```
 
 ## Authors
 

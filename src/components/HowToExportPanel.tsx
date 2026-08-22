@@ -8,9 +8,9 @@ export function HowToExportPanel({ defaultOpen = true }: { defaultOpen?: boolean
 
       <div className="howto-body stack">
         <p style={{ margin: 0 }}>
-          Use branch <code>setup/measure</code> for analyze + export.{" "}
+          Use branch <code>setup/measure</code> for analyze, export, experiments, and publish-to-DB.{" "}
           <strong>Not</strong> thin <code>main</code>/<code>base</code> — those have no{" "}
-          <code>export:run</code> (<code>main</code>/<code>base</code> = stock + pi-agent only).
+          <code>export:run</code>.
         </p>
 
         <pre className="code-block">{`git checkout setup/measure
@@ -28,25 +28,36 @@ npm run export:run -- <run-id> --approach A-baseline-1`}</pre>
 
         <ul className="list-plain">
           <li>
-            Prefer paste: <code>artifacts/exports/&lt;run-id&gt;.json</code> —{" "}
-            <code>agentcofounder.run_export.v2</code> (action-flow) or legacy v1
+            Export file: <code>artifacts/exports/&lt;run-id&gt;.json</code> — prefer{" "}
+            <code>agentcofounder.run_export.v2</code> (action-flow chart on run detail)
           </li>
           <li>
-            Or paste legacy <code>artifacts/runs/&lt;run-id&gt;/result.json</code> — this app asks
-            for approach / provider / model / run id, then the server normalizes to v1 (wall time
-            &amp; phase breakdown stay empty)
+            Legacy v1 or <code>result.json</code> still accepted — server normalizes; phase / wall time may be empty
           </li>
           <li>
             <code>--approach</code> = experiment arm (e.g. <code>A-baseline-1</code>,{" "}
-            <code>A-autoverify-owned-2</code>) — not generic <code>base</code>. Optional:{" "}
-            <code>RUN_APPROACH=…</code>
+            <code>rtl-control-3</code>, <code>rtl-cleanup-2</code>) — not generic <code>base</code>
           </li>
           <li>
-            Up-to-date export tooling adds <code>meta.classification</code> for Method filters;
-            ratings / comments / exclude flags are entered in this app after paste
+            Export tooling adds <code>meta.classification</code> for Method filters; ratings / comments go in this app
+            or the seed script
           </li>
-          <li>Export is manual (not automatic after challenge)</li>
         </ul>
+
+        <h3 style={{ marginBottom: 0 }}>Publish to prod DB (bulk)</h3>
+        <p className="muted" style={{ margin: 0 }}>
+          From WSL in the harness repo — re-export, sync manifest, POST upsert by <code>run_id</code>:
+        </p>
+        <pre className="code-block">{`export HACKATHON_ACCESS_CODE='…'
+export HACKATHON_AUTHOR=paul
+
+npm run publish:run -- <run-id> --approach rtl-control-1
+npm run publish:runs -- --exp1-rtl   # all Experiment 1 reps`}</pre>
+        <p style={{ margin: 0 }}>
+          Or from this repo: <code>npm run seed:exp1-rtl</code> then{" "}
+          <code>npm run backfill:classification</code> (reads exports on WSL via{" "}
+          <code>AGENTCOFOUNDER_ROOT</code>).
+        </p>
 
         <h3 style={{ marginBottom: 0 }}>Branch cheat-sheet</h3>
         <div className="table-wrap">
@@ -62,7 +73,7 @@ npm run export:run -- <run-id> --approach A-baseline-1`}</pre>
                 <td>
                   <code>setup/measure</code>
                 </td>
-                <td>Analyze + export JSON for this app</td>
+                <td>Analyze, export, experiments, publish to runs DB</td>
               </tr>
               <tr>
                 <td>
@@ -81,9 +92,10 @@ npm run export:run -- <run-id> --approach A-baseline-1`}</pre>
         </div>
 
         <p style={{ margin: 0 }}>
-          Full hackathon checklist (including Phase I — export):{" "}
+          Compare cohorts on <a href="/cohort">Cohort</a> (<code>?preset=exp1-rtl</code> for Experiment 1). Full
+          checklist:{" "}
           <a href="/steps.html" target="_blank" rel="noreferrer">
-            open steps.html
+            steps.html
           </a>
           .
         </p>
