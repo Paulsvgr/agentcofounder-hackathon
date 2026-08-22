@@ -15,6 +15,11 @@ API_BASE = os.environ.get(
 ACCESS_CODE = os.environ.get("HACKATHON_ACCESS_CODE", "")
 AUTHOR = os.environ.get("HACKATHON_AUTHOR", "paul")
 
+RUN_EXPORT_SCHEMAS = (
+    "agentcofounder.run_export.v1",
+    "agentcofounder.run_export.v2",
+)
+
 # User enrichment table (overrides approach / rating / comment when set).
 ENRICH: dict[str, dict] = {
     "2026-08-21T17-12-43-573Z": {
@@ -201,7 +206,7 @@ def collect_pastes(exports_dir: Path, runs_dir: Path | None = None) -> dict[str,
             if not isinstance(data, dict):
                 continue
             rid = None
-            if data.get("schema") == "agentcofounder.run_export.v1":
+            if data.get("schema") in RUN_EXPORT_SCHEMAS:
                 rid = (data.get("meta") or {}).get("run_id")
             elif isinstance(data.get("status"), str):
                 rid = fp.stem
@@ -225,7 +230,7 @@ def collect_pastes(exports_dir: Path, runs_dir: Path | None = None) -> dict[str,
                     if isinstance(data, dict):
                         pastes[run_id] = data
                         break
-            if run_id in pastes and pastes[run_id].get("schema") == "agentcofounder.run_export.v1":
+            if run_id in pastes and pastes[run_id].get("schema") in RUN_EXPORT_SCHEMAS:
                 continue
             result_fp = run_folder / "result.json"
             if not result_fp.is_file():
@@ -335,7 +340,7 @@ def main() -> int:
         # our exports are v1 so ok.
 
         # Ensure provider/model for any result_json leftovers
-        if paste.get("schema") != "agentcofounder.run_export.v1":
+        if paste.get("schema") not in RUN_EXPORT_SCHEMAS:
             overrides.setdefault("provider", "unknown")
             overrides.setdefault("model", "unknown")
 
