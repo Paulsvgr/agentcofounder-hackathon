@@ -4,10 +4,8 @@ import { RunsCharts } from "../components/RunsCharts";
 import { TokenStatsPanel } from "../components/TokenStats";
 import {
   effectiveHuman,
-  experimentFilterOptions,
   experimentKey,
   includeInEfficiencyCompare,
-  lineFilterOptions,
   lineKey,
   loadClassificationManifest,
   methodLabel,
@@ -101,12 +99,16 @@ export function RunsPage() {
 
   const lineOptions = useMemo(() => {
     if (!manifestReady) return [];
-    return lineFilterOptions(runs);
+    const set = new Set<string>();
+    for (const r of runs) set.add(lineKey(r));
+    return [...set].sort();
   }, [runs, manifestReady]);
 
   const experimentOptions = useMemo(() => {
     if (!manifestReady) return [];
-    return experimentFilterOptions(runs);
+    const set = new Set<string>();
+    for (const r of runs) set.add(experimentKey(r));
+    return [...set].sort();
   }, [runs, manifestReady]);
 
   const authorOptions = useMemo(() => {
