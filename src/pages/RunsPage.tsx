@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { RunsCharts } from "../components/RunsCharts";
+import { TokenStatsPanel } from "../components/TokenStats";
 import { listRuns } from "../lib/api";
 import {
   approachKey,
@@ -199,6 +200,8 @@ export function RunsPage() {
 
         {!loading && !error && (
           <>
+            <TokenStatsPanel runs={filtered} />
+
             <RunsCharts runs={filtered} onSelectRun={(id) => navigate(`/runs/${id}`)} />
 
             <div className="table-wrap">

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { getRun } from "../lib/api";
+import { RunTokenStats } from "../components/TokenStats";
 import { formatNumber, shortCommit } from "../lib/stats";
 import type { HackathonRunRecord, TestRun } from "../types/runExport";
 
@@ -108,6 +109,8 @@ export function RunDetailPage() {
           </div>
         </div>
       </section>
+
+      <RunTokenStats run={run} />
 
       <section className="panel">
         <h3>Summary</h3>
