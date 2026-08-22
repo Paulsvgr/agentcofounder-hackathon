@@ -51,7 +51,8 @@ export function AddRunPage() {
       runId: parsed.meta.run_id,
       status: parsed.harness.status,
       weighted: parsed.efficiency.weighted_total,
-      approach: parsed.meta.approach || parsed.meta.git_branch || "—",
+      approach: parsed.meta.approach || parsed.meta.classification?.display_label || "—",
+      schema: parsed.schema,
       model: [parsed.meta.provider, parsed.meta.model].filter(Boolean).join(" / ") || "—",
     };
   }, [parsed]);
@@ -126,10 +127,14 @@ export function AddRunPage() {
   async function onLoadSample() {
     setError(null);
     try {
-      const res = await fetch("/sample-run-export.json");
-      if (!res.ok) throw new Error("Could not load sample export.");
-      const text = await res.text();
-      setPaste(text);
+      const res = await fetch("/fixtures/2026-08-21T17-41-28-455Z.json");
+      if (!res.ok) {
+        const fallback = await fetch("/sample-run-export.json");
+        if (!fallback.ok) throw new Error("Could not load sample export.");
+        setPaste(await fallback.text());
+      } else {
+        setPaste(await res.text());
+      }
       setDetected(null);
       setParsed(null);
       setPasteKind(null);
@@ -179,9 +184,8 @@ export function AddRunPage() {
       <section className="panel">
         <h2>Add run</h2>
         <p className="muted" style={{ marginTop: 0 }}>
-          Paste <code>artifacts/exports/&lt;run_id&gt;.json</code> (preferred) or legacy{" "}
-          <code>artifacts/runs/&lt;run_id&gt;/result.json</code>. Server stores{" "}
-          <code>agentcofounder.run_export.v1</code> only. See{" "}
+          Paste <code>artifacts/exports/&lt;run_id&gt;.json</code> — preferred{" "}
+          <code>agentcofounder.run_export.v2</code> (action-flow chart) or legacy v1. See{" "}
           <Link to="/how-to">How to export</Link>.
         </p>
 
@@ -209,7 +213,7 @@ export function AddRunPage() {
                   id="paste"
                   value={paste}
                   onChange={(e) => setPaste(e.target.value)}
-                  placeholder='run_export.v1 or result.json'
+                  placeholder="run_export.v2, v1, or result.json"
                   spellCheck={false}
                 />
               </div>
@@ -218,7 +222,7 @@ export function AddRunPage() {
                   Validate paste
                 </button>
                 <button type="button" className="btn btn-ghost" onClick={onLoadSample}>
-                  Load sample JSON
+                  Load v2 sample JSON
                 </button>
               </div>
             </>
@@ -314,8 +318,8 @@ export function AddRunPage() {
             <>
               <div className="alert alert-ok">
                 {pasteKind === "result_json" ? "Normalized legacy paste" : "Parsed"}{" "}
-                <strong>{preview.runId}</strong> · {preview.approach} · status {preview.status} ·
-                weighted {preview.weighted}
+                <strong>{preview.runId}</strong> · {preview.schema} · {preview.approach} · status{" "}
+                {preview.status} · weighted {preview.weighted}
               </div>
 
               <div className="row">

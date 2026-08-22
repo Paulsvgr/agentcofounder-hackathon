@@ -15,6 +15,7 @@ import {
   shouldHideEarlySmoke,
 } from "../lib/classification";
 import { listRuns } from "../lib/api";
+import { shortRunId } from "../lib/actionFlow";
 import {
   formatNumber,
   medianWeightedByExperiment,
@@ -47,6 +48,7 @@ export function RunsPage() {
   const [lines, setLines] = useState<string[]>([]);
   const [experiments, setExperiments] = useState<string[]>([]);
   const [branch, setBranch] = useState("");
+  const [provider, setProvider] = useState("");
   const [status, setStatus] = useState("");
   const [sort, setSort] = useState<SortKey>("weighted_asc");
   const [hideNoise, setHideNoise] = useState(true);
@@ -84,6 +86,15 @@ export function RunsPage() {
     return [...set].sort();
   }, [runs]);
 
+  const providers = useMemo(() => {
+    const set = new Set<string>();
+    for (const r of runs) {
+      const p = r.data.export?.meta?.provider;
+      if (p) set.add(p);
+    }
+    return [...set].sort();
+  }, [runs]);
+
   const filtered = useMemo(() => {
     if (!manifestReady) return [];
     let list = [...runs];
@@ -97,6 +108,9 @@ export function RunsPage() {
       list = list.filter(
         (r) => (r.data.git_branch || r.data.export?.meta?.git_branch) === branch,
       );
+    }
+    if (provider) {
+      list = list.filter((r) => r.data.export?.meta?.provider === provider);
     }
     if (status) {
       list = list.filter(
@@ -123,7 +137,7 @@ export function RunsPage() {
       return wa - wb;
     });
     return list;
-  }, [runs, author, lines, experiments, branch, status, sort, hideNoise, manifestReady]);
+  }, [runs, author, lines, experiments, branch, provider, status, sort, hideNoise, manifestReady]);
 
   const chartRuns = useMemo(() => {
     if (includeExcluded) return filtered;
@@ -198,6 +212,17 @@ export function RunsPage() {
               {branches.map((b) => (
                 <option key={b} value={b}>
                   {b}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div className="field">
+            <label htmlFor="f-provider">Provider</label>
+            <select id="f-provider" value={provider} onChange={(e) => setProvider(e.target.value)}>
+              <option value="">All</option>
+              {providers.map((p) => (
+                <option key={p} value={p}>
+                  {p}
                 </option>
               ))}
             </select>
@@ -308,7 +333,7 @@ export function RunsPage() {
                     const human = effectiveHuman(run);
                     return (
                       <tr key={run.id} onClick={() => navigate(`/runs/${run.id}`)}>
-                        <td>{exp?.meta?.run_id || "—"}</td>
+                        <td title={exp?.meta?.run_id}>{shortRunId(exp?.meta?.run_id)}</td>
                         <td>{run.person}</td>
                         <td title={methodTooltip(run)}>{methodLabel(run)}</td>
                         <td>{run.data.git_branch || exp?.meta?.git_branch || "—"}</td>

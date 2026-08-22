@@ -1,15 +1,18 @@
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
+import { ActionFlowChart } from "../components/ActionFlowChart";
 import { getRun } from "../lib/api";
 import { RunTokenStats } from "../components/TokenStats";
+import { shortRunId } from "../lib/actionFlow";
 import {
   effectiveClassification,
   effectiveHuman,
   loadClassificationManifest,
   methodLabel,
 } from "../lib/classification";
+import { efficiencyOf, WEIGHTED_COST_TOOLTIP } from "../lib/efficiencyFields";
 import { formatNumber, shortCommit } from "../lib/stats";
-import type { HackathonRunRecord, TestRun } from "../types/runExport";
+import { hasActionFlow, isExportV2, type HackathonRunRecord, type TestRun } from "../types/runExport";
 
 function TestList({ title, items }: { title: string; items: TestRun[] | undefined }) {
   if (!items?.length) {
@@ -33,6 +36,20 @@ function TestList({ title, items }: { title: string; items: TestRun[] | undefine
           </li>
         ))}
       </ul>
+    </div>
+  );
+}
+
+function schemaBadge(exportDoc: HackathonRunRecord["data"]["export"]) {
+  if (isExportV2(exportDoc)) return <span className="badge badge-ok">v2</span>;
+  return <span className="badge badge-warn">legacy v1</span>;
+}
+
+function timingChip(label: string, value: number | null | undefined) {
+  return (
+    <div className="stat">
+      <div className="label">{label}</div>
+      <div className="value">{formatNumber(value ?? null)}</div>
     </div>
   );
 }
@@ -74,6 +91,10 @@ export function RunDetailPage() {
   const phases = exp?.efficiency?.phase_heuristic || [];
   const cls = effectiveClassification(run);
   const human = effectiveHuman(run);
+  const eff = efficiencyOf(run);
+  const showActionFlow = hasActionFlow(exp);
+  const runId = exp?.meta?.run_id || run.id;
+  const status = exp?.harness?.status || "—";
 
   return (
     <div className="stack">
@@ -82,45 +103,78 @@ export function RunDetailPage() {
       </p>
 
       <section className="panel">
-        <h2>{exp?.meta?.run_id || run.id}</h2>
+        <div className="detail-head">
+          <div>
+            <h2>{methodLabel(run)}</h2>
+            <p className="muted" style={{ marginTop: 0 }}>
+              {shortRunId(runId)} · {run.person} ·{" "}
+              {run.data.git_branch || exp?.meta?.git_branch || "—"} @{" "}
+              {shortCommit(run.data.git_commit || exp?.meta?.git_commit)} ·{" "}
+              {exp?.meta?.recorded_at
+                ? new Date(exp.meta.recorded_at).toLocaleString()
+                : "—"}
+            </p>
+            <p className="muted" style={{ marginTop: 0, fontSize: "0.85rem" }}>
+              Legacy approach: {cls.legacy_approach}
+            </p>
+          </div>
+          <div className="detail-badges">
+            {schemaBadge(exp)}
+            <span
+              className={
+                status.toLowerCase() === "success"
+                  ? "badge badge-ok"
+                  : status.toLowerCase() === "failed"
+                    ? "badge badge-fail"
+                    : "badge badge-warn"
+              }
+            >
+              {status}
+            </span>
+          </div>
+        </div>
+
         <p className="muted" style={{ marginTop: 0 }}>
-          {methodLabel(run)} · {run.person} ·{" "}
-          {run.data.git_branch || exp?.meta?.git_branch || "—"} @{" "}
-          {shortCommit(run.data.git_commit || exp?.meta?.git_commit)}
-        </p>
-        <p className="muted" style={{ marginTop: 0, fontSize: "0.85rem" }}>
-          Legacy approach: {cls.legacy_approach}
+          {[exp?.meta?.provider, exp?.meta?.model].filter(Boolean).join(" / ") || "—"}
         </p>
 
         <div className="stat-grid">
-          <div className="stat">
-            <div className="label">Status</div>
-            <div className="value">{exp?.harness?.status || "—"}</div>
-          </div>
-          <div className="stat">
+          <div className="stat" title={WEIGHTED_COST_TOOLTIP}>
             <div className="label">Weighted total</div>
             <div className="value">{formatNumber(exp?.efficiency?.weighted_total)}</div>
           </div>
+          {timingChip("Wall seconds", exp?.efficiency?.wall_seconds)}
           <div className="stat">
             <div className="label">Model calls</div>
             <div className="value">{exp?.harness?.model_calls ?? "—"}</div>
           </div>
+          {timingChip("First green (s)", eff.first_green_s)}
+          {timingChip("Last green (s)", eff.last_green_s)}
+          {timingChip("Green → exit (s)", eff.green_to_exit_s)}
           <div className="stat">
-            <div className="label">Wall seconds</div>
-            <div className="value">{formatNumber(exp?.efficiency?.wall_seconds)}</div>
+            <div className="label">Test reinspection</div>
+            <div className="value">{formatNumber(eff.test_reinspection_calls, 0)}</div>
+          </div>
+          <div className="stat">
+            <div className="label">Post-green verify</div>
+            <div className="value">{formatNumber(eff.post_green_verification_calls, 0)}</div>
+          </div>
+          <div className="stat">
+            <div className="label">Manual build calls</div>
+            <div className="value">{formatNumber(eff.manual_build_calls, 0)}</div>
           </div>
           <div className="stat">
             <div className="label">App rating</div>
             <div className="value">{human.app_rating ?? "—"}</div>
           </div>
-          <div className="stat">
-            <div className="label">Provider / model</div>
-            <div className="value" style={{ fontSize: "0.95rem" }}>
-              {[exp?.meta?.provider, exp?.meta?.model].filter(Boolean).join(" / ") || "—"}
-            </div>
-          </div>
         </div>
       </section>
+
+      {showActionFlow && exp && (
+        <section className="panel">
+          <ActionFlowChart exportDoc={exp} />
+        </section>
+      )}
 
       <RunTokenStats run={run} />
 
@@ -160,11 +214,16 @@ export function RunDetailPage() {
         <TestList title="Harness checks" items={exp?.harness?.harness_checks} />
       </section>
 
-      <section className="panel">
-        <h3>Phase breakdown (heuristic)</h3>
-        <p className="muted" style={{ marginTop: 0 }}>
-          Heuristic only — not ground truth. Official weighted ≈ input + output×3 +
-          cache_read×0.1.
+      <details className="panel phase-details">
+        <summary>
+          <h3 style={{ display: "inline" }}>
+            {showActionFlow ? "Heuristic only (per-call guess)" : "Phase breakdown (heuristic)"}
+          </h3>
+        </summary>
+        <p className="muted" style={{ marginTop: "0.5rem" }}>
+          {showActionFlow
+            ? "Secondary view — use Action flow above for execution segments."
+            : "Heuristic only — not ground truth. Official weighted ≈ input + output×3 + cache_read×0.1."}
         </p>
         <div className="phase-bar">
           {phases.map((p) => (
@@ -184,7 +243,7 @@ export function RunDetailPage() {
           ))}
           {!phases.length && <p className="muted">No phase heuristic data.</p>}
         </div>
-      </section>
+      </details>
     </div>
   );
 }

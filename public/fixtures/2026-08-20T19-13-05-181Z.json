@@ -1,0 +1,108 @@
+{
+  "schema": "agentcofounder.run_export.v2",
+  "meta": {
+    "run_id": "2026-08-20T19-13-05-181Z",
+    "recorded_at": "2026-08-20T22:00:00.000Z",
+    "git_branch": "setup/measure",
+    "git_commit": "abc1234567890",
+    "approach": "A-prime",
+    "provider": "berget",
+    "model": "zai-org/GLM-5.2",
+    "classification": {
+      "line": "A-prime",
+      "experiment": "prime-comparison",
+      "run_index": 1,
+      "display_label": "A-prime · prime comparison · run 1",
+      "legacy_approach": "A-prime"
+    }
+  },
+  "harness": {
+    "status": "partial",
+    "summary": "Timed out in RTL loop; mega-call dominated build phase.",
+    "implemented_features": ["Partial UI"],
+    "assumptions": [],
+    "tests_run": [{ "command": "npm test", "journey": "RTL loop", "result": "failed" }],
+    "harness_checks": [],
+    "model_calls": 22,
+    "input_tokens": 35000,
+    "output_tokens": 22000,
+    "cache_read_tokens": 60000,
+    "cache_write_tokens": 0,
+    "total_tokens": 117000,
+    "reasoning_tokens": 0,
+    "cost_total": 0,
+    "pi_exit_code": 1
+  },
+  "efficiency": {
+    "weighted_total": 120441,
+    "wall_seconds": 600.0,
+    "seconds_per_call": 27.3,
+    "first_test_failure_s": 420.0,
+    "first_green_s": null,
+    "last_green_s": null,
+    "green_to_exit_s": null,
+    "manual_test_calls": 8,
+    "manual_build_calls": 2,
+    "test_reinspection_calls": 4,
+    "post_green_verification_calls": 0,
+    "auto_test_candidate_events": 2,
+    "auto_test_actual_runs": 1,
+    "action_flow_source": "derived+override",
+    "action_flow": [
+      {
+        "stage": "inspect",
+        "call_count": 2,
+        "call_indexes": [0, 1],
+        "wall_seconds": 30.0,
+        "raw_tokens": 8000,
+        "weighted_tokens": 6000,
+        "note": null
+      },
+      {
+        "stage": "build_app",
+        "call_count": 1,
+        "call_indexes": [2],
+        "wall_seconds": 380.0,
+        "raw_tokens": 65000,
+        "weighted_tokens": 85000,
+        "note": "Run 6 mega-call — single call dominated wall time"
+      },
+      {
+        "stage": "write_tests",
+        "call_count": 4,
+        "call_indexes": [3, 4, 5, 6],
+        "wall_seconds": 80.0,
+        "raw_tokens": 20000,
+        "weighted_tokens": 18000,
+        "note": null
+      },
+      {
+        "stage": "diagnose",
+        "call_count": 8,
+        "call_indexes": [7, 8, 9, 10, 11, 12, 13, 14],
+        "wall_seconds": 70.0,
+        "raw_tokens": 18000,
+        "weighted_tokens": 9441,
+        "note": null
+      },
+      {
+        "stage": "report_final",
+        "call_count": 7,
+        "call_indexes": [15, 16, 17, 18, 19, 20, 21],
+        "wall_seconds": 40.0,
+        "raw_tokens": 6000,
+        "weighted_tokens": 2000,
+        "note": null
+      }
+    ],
+    "phase_heuristic": [
+      { "phase": "build", "call_count": 6, "weighted_cost": 70000, "share_of_total": 0.58 },
+      { "phase": "test_debug", "call_count": 12, "weighted_cost": 40000, "share_of_total": 0.33 },
+      { "phase": "mixed", "call_count": 4, "weighted_cost": 10441, "share_of_total": 0.09 }
+    ],
+    "time_to_first_failing_test_s": 420.0,
+    "time_to_final_green_s": null,
+    "npm_test_command_count": 8,
+    "auto_test_trigger_hits": 2
+  }
+}

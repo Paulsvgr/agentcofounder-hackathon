@@ -1,6 +1,13 @@
-/** Paste contract from harness: agentcofounder.run_export.v1 */
+/** Paste contract from harness: run_export v1 (legacy) or v2 (action-flow). */
 
-export const RUN_EXPORT_SCHEMA = "agentcofounder.run_export.v1" as const;
+export const RUN_EXPORT_SCHEMA_V1 = "agentcofounder.run_export.v1" as const;
+export const RUN_EXPORT_SCHEMA_V2 = "agentcofounder.run_export.v2" as const;
+
+export const RUN_EXPORT_SCHEMA = RUN_EXPORT_SCHEMA_V1;
+
+export type RunExportSchema =
+  | typeof RUN_EXPORT_SCHEMA_V1
+  | typeof RUN_EXPORT_SCHEMA_V2;
 
 export type TestRun = {
   command: string;
@@ -13,6 +20,37 @@ export type PhaseBucket = {
   call_count: number;
   weighted_cost: number;
   share_of_total: number;
+};
+
+export type ActionStage =
+  | "inspect"
+  | "build_app"
+  | "write_tests"
+  | "diagnose"
+  | "repair_loop"
+  | "green_build"
+  | "extra_verify"
+  | "report_final";
+
+export const ACTION_STAGE_ORDER: ActionStage[] = [
+  "inspect",
+  "build_app",
+  "write_tests",
+  "diagnose",
+  "repair_loop",
+  "green_build",
+  "extra_verify",
+  "report_final",
+];
+
+export type ActionSegment = {
+  stage: ActionStage;
+  call_count: number;
+  call_indexes: number[];
+  wall_seconds: number;
+  raw_tokens: number;
+  weighted_tokens: number;
+  note: string | null;
 };
 
 export type ClassificationLine = "A" | "A-prime" | "B-prime" | "C" | "C-prime" | "D" | "unknown";
@@ -35,7 +73,7 @@ export type RunClassification = {
   experiment: ClassificationExperiment;
   run_index: number | null;
   display_label: string;
-  legacy_approach: string;
+  legacy_approach?: string;
 };
 
 export type RunFlags = {
@@ -50,8 +88,31 @@ export type RunHuman = {
   run_comment: string;
 };
 
+export type RunExportEfficiency = {
+  weighted_total: number;
+  wall_seconds: number | null;
+  seconds_per_call: number | null;
+  first_test_failure_s?: number | null;
+  first_green_s?: number | null;
+  last_green_s?: number | null;
+  green_to_exit_s?: number | null;
+  manual_test_calls?: number;
+  manual_build_calls?: number;
+  test_reinspection_calls?: number;
+  post_green_verification_calls?: number;
+  auto_test_candidate_events?: number;
+  auto_test_actual_runs?: number;
+  action_flow?: ActionSegment[];
+  action_flow_source?: "derived" | "derived+override";
+  phase_heuristic: PhaseBucket[];
+  time_to_first_failing_test_s: number | null;
+  time_to_final_green_s: number | null;
+  npm_test_command_count: number | null;
+  auto_test_trigger_hits: number | null;
+};
+
 export type RunExport = {
-  schema: typeof RUN_EXPORT_SCHEMA;
+  schema: RunExportSchema;
   meta: {
     run_id: string;
     recorded_at: string;
@@ -60,7 +121,6 @@ export type RunExport = {
     approach: string | null;
     provider: string | null;
     model: string | null;
-    /** Set by harness export:run from RUN_APPROACH / --approach (machine fields only). */
     classification?: RunClassification;
   };
   harness: {
@@ -80,16 +140,7 @@ export type RunExport = {
     cost_total: number;
     pi_exit_code: number;
   };
-  efficiency: {
-    weighted_total: number;
-    wall_seconds: number | null;
-    seconds_per_call: number | null;
-    time_to_final_green_s: number | null;
-    time_to_first_failing_test_s: number | null;
-    npm_test_command_count: number | null;
-    auto_test_trigger_hits: number | null;
-    phase_heuristic: PhaseBucket[];
-  };
+  efficiency: RunExportEfficiency;
 };
 
 /** Meta fields the user can fill after a legacy result.json paste. */
@@ -102,7 +153,7 @@ export type PasteOverrides = {
   git_commit?: string | null;
 };
 
-export type PasteKind = "run_export_v1" | "result_json";
+export type PasteKind = "run_export_v2" | "run_export_v1" | "result_json";
 
 /** Human fields — UI / DB only, never part of paste schema. */
 export type HumanFields = {
@@ -147,3 +198,12 @@ export const HACKATHON_AUTHORS = [
 ] as const;
 
 export type HackathonAuthor = (typeof HACKATHON_AUTHORS)[number];
+
+export function isExportV2(exportDoc: RunExport | undefined): boolean {
+  return exportDoc?.schema === RUN_EXPORT_SCHEMA_V2;
+}
+
+export function hasActionFlow(exportDoc: RunExport | undefined): boolean {
+  const flow = exportDoc?.efficiency?.action_flow;
+  return isExportV2(exportDoc) && Array.isArray(flow) && flow.length > 0;
+}

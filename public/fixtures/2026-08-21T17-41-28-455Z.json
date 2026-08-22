@@ -1,0 +1,108 @@
+{
+  "schema": "agentcofounder.run_export.v2",
+  "meta": {
+    "run_id": "2026-08-21T17-41-28-455Z",
+    "recorded_at": "2026-08-21T20:45:00.000Z",
+    "git_branch": "main",
+    "git_commit": "d0f0b49abc123",
+    "approach": "A-autotest-1",
+    "provider": "zai",
+    "model": "glm-5.2",
+    "classification": {
+      "line": "A",
+      "experiment": "auto-test",
+      "run_index": 1,
+      "display_label": "A · auto test · run 1",
+      "legacy_approach": "A-autotest-1"
+    }
+  },
+  "harness": {
+    "status": "success",
+    "summary": "Clean auto-test floor run — no repair loop.",
+    "implemented_features": ["Add book", "List books", "Search"],
+    "assumptions": ["Single user"],
+    "tests_run": [{ "command": "npm test", "journey": "Add and list", "result": "passed" }],
+    "harness_checks": [{ "command": "vitest run", "journey": "Smoke", "result": "passed" }],
+    "model_calls": 13,
+    "input_tokens": 12000,
+    "output_tokens": 8000,
+    "cache_read_tokens": 40000,
+    "cache_write_tokens": 0,
+    "total_tokens": 60000,
+    "reasoning_tokens": 0,
+    "cost_total": 0,
+    "pi_exit_code": 0
+  },
+  "efficiency": {
+    "weighted_total": 54163,
+    "wall_seconds": 118.5,
+    "seconds_per_call": 9.1,
+    "first_test_failure_s": null,
+    "first_green_s": 72.0,
+    "last_green_s": 95.0,
+    "green_to_exit_s": 23.5,
+    "manual_test_calls": 2,
+    "manual_build_calls": 1,
+    "test_reinspection_calls": 0,
+    "post_green_verification_calls": 1,
+    "auto_test_candidate_events": 3,
+    "auto_test_actual_runs": 2,
+    "action_flow_source": "derived",
+    "action_flow": [
+      {
+        "stage": "inspect",
+        "call_count": 2,
+        "call_indexes": [0, 1],
+        "wall_seconds": 18.0,
+        "raw_tokens": 8000,
+        "weighted_tokens": 6200,
+        "note": null
+      },
+      {
+        "stage": "build_app",
+        "call_count": 4,
+        "call_indexes": [2, 3, 4, 5],
+        "wall_seconds": 42.0,
+        "raw_tokens": 18000,
+        "weighted_tokens": 15000,
+        "note": null
+      },
+      {
+        "stage": "write_tests",
+        "call_count": 2,
+        "call_indexes": [6, 7],
+        "wall_seconds": 22.0,
+        "raw_tokens": 9000,
+        "weighted_tokens": 7800,
+        "note": null
+      },
+      {
+        "stage": "green_build",
+        "call_count": 3,
+        "call_indexes": [8, 9, 10],
+        "wall_seconds": 28.5,
+        "raw_tokens": 15000,
+        "weighted_tokens": 18500,
+        "note": null
+      },
+      {
+        "stage": "report_final",
+        "call_count": 2,
+        "call_indexes": [11, 12],
+        "wall_seconds": 8.0,
+        "raw_tokens": 5000,
+        "weighted_tokens": 6663,
+        "note": null
+      }
+    ],
+    "phase_heuristic": [
+      { "phase": "build", "call_count": 5, "weighted_cost": 20000, "share_of_total": 0.37 },
+      { "phase": "test_debug", "call_count": 5, "weighted_cost": 22000, "share_of_total": 0.41 },
+      { "phase": "finalize", "call_count": 3, "weighted_cost": 12163, "share_of_total": 0.22 }
+    ],
+    "time_to_first_failing_test_s": null,
+    "time_to_final_green_s": 95.0,
+    "npm_test_command_count": 2,
+    "auto_test_trigger_hits": 3
+  }
+}

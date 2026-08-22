@@ -28,8 +28,8 @@ npm run export:run -- <run-id> --approach A-baseline-1`}</pre>
 
         <ul className="list-plain">
           <li>
-            Prefer paste: <code>artifacts/exports/&lt;run-id&gt;.json</code> (schema{" "}
-            <code>agentcofounder.run_export.v1</code>)
+            Prefer paste: <code>artifacts/exports/&lt;run-id&gt;.json</code> —{" "}
+            <code>agentcofounder.run_export.v2</code> (action-flow) or legacy v1
           </li>
           <li>
             Or paste legacy <code>artifacts/runs/&lt;run-id&gt;/result.json</code> — this app asks

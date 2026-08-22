@@ -1,8 +1,12 @@
+import { validateActionFlow } from "./actionFlow";
 import {
-  RUN_EXPORT_SCHEMA,
+  RUN_EXPORT_SCHEMA_V1,
+  RUN_EXPORT_SCHEMA_V2,
+  type ActionSegment,
   type PasteKind,
   type PasteOverrides,
   type RunExport,
+  type RunExportEfficiency,
 } from "../types/runExport";
 
 export type DetectedPaste =
@@ -19,12 +23,18 @@ export type NormalizeOk = {
 
 export type NormalizeFail = { ok: false; error: string };
 
+const ALLOWED_TOP_KEYS = new Set(["schema", "meta", "harness", "efficiency"]);
+
 function isObject(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
 function num(value: unknown, fallback = 0): number {
   return typeof value === "number" && Number.isFinite(value) ? value : fallback;
+}
+
+function numOrNull(value: unknown): number | null {
+  return typeof value === "number" && Number.isFinite(value) ? value : null;
 }
 
 function str(value: unknown): string {
@@ -54,6 +64,99 @@ function testRuns(value: unknown): RunExport["harness"]["tests_run"] {
     });
 }
 
+function parseActionFlow(value: unknown): ActionSegment[] | undefined {
+  if (!Array.isArray(value)) return undefined;
+  const out: ActionSegment[] = [];
+  for (const item of value) {
+    if (!isObject(item)) continue;
+    out.push({
+      stage: str(item.stage) as ActionSegment["stage"],
+      call_count: num(item.call_count),
+      call_indexes: Array.isArray(item.call_indexes)
+        ? item.call_indexes.filter((x): x is number => typeof x === "number")
+        : [],
+      wall_seconds: num(item.wall_seconds),
+      raw_tokens: num(item.raw_tokens),
+      weighted_tokens: num(item.weighted_tokens),
+      note: typeof item.note === "string" ? item.note : null,
+    });
+  }
+  return out.length ? out : undefined;
+}
+
+function parsePhaseHeuristic(value: unknown): RunExportEfficiency["phase_heuristic"] {
+  if (!Array.isArray(value)) return [];
+  return value
+    .filter(isObject)
+    .map((p) => ({
+      phase: str(p.phase) as RunExportEfficiency["phase_heuristic"][number]["phase"],
+      call_count: num(p.call_count),
+      weighted_cost: num(p.weighted_cost),
+      share_of_total: num(p.share_of_total),
+    }));
+}
+
+function parseEfficiency(efficiencyIn: Record<string, unknown>, harness: Record<string, unknown>) {
+  let weighted: number;
+  const existingWeighted = efficiencyIn.weighted_total;
+  if (typeof existingWeighted === "number" && Number.isFinite(existingWeighted)) {
+    weighted = existingWeighted;
+  } else {
+    weighted = computeWeightedTotal(
+      num(harness.input_tokens),
+      num(harness.output_tokens),
+      num(harness.cache_read_tokens),
+    );
+  }
+
+  const efficiency: RunExportEfficiency = {
+    weighted_total: weighted,
+    wall_seconds: numOrNull(efficiencyIn.wall_seconds),
+    seconds_per_call: numOrNull(efficiencyIn.seconds_per_call),
+    first_test_failure_s: numOrNull(efficiencyIn.first_test_failure_s),
+    first_green_s: numOrNull(efficiencyIn.first_green_s),
+    last_green_s: numOrNull(efficiencyIn.last_green_s),
+    green_to_exit_s: numOrNull(efficiencyIn.green_to_exit_s),
+    manual_test_calls:
+      typeof efficiencyIn.manual_test_calls === "number"
+        ? efficiencyIn.manual_test_calls
+        : undefined,
+    manual_build_calls:
+      typeof efficiencyIn.manual_build_calls === "number"
+        ? efficiencyIn.manual_build_calls
+        : undefined,
+    test_reinspection_calls:
+      typeof efficiencyIn.test_reinspection_calls === "number"
+        ? efficiencyIn.test_reinspection_calls
+        : undefined,
+    post_green_verification_calls:
+      typeof efficiencyIn.post_green_verification_calls === "number"
+        ? efficiencyIn.post_green_verification_calls
+        : undefined,
+    auto_test_candidate_events:
+      typeof efficiencyIn.auto_test_candidate_events === "number"
+        ? efficiencyIn.auto_test_candidate_events
+        : undefined,
+    auto_test_actual_runs:
+      typeof efficiencyIn.auto_test_actual_runs === "number"
+        ? efficiencyIn.auto_test_actual_runs
+        : undefined,
+    action_flow: parseActionFlow(efficiencyIn.action_flow),
+    action_flow_source:
+      efficiencyIn.action_flow_source === "derived" ||
+      efficiencyIn.action_flow_source === "derived+override"
+        ? efficiencyIn.action_flow_source
+        : undefined,
+    phase_heuristic: parsePhaseHeuristic(efficiencyIn.phase_heuristic),
+    time_to_first_failing_test_s: numOrNull(efficiencyIn.time_to_first_failing_test_s),
+    time_to_final_green_s: numOrNull(efficiencyIn.time_to_final_green_s),
+    npm_test_command_count: numOrNull(efficiencyIn.npm_test_command_count),
+    auto_test_trigger_hits: numOrNull(efficiencyIn.auto_test_trigger_hits),
+  };
+
+  return efficiency;
+}
+
 export function computeWeightedTotal(
   inputTokens: number,
   outputTokens: number,
@@ -62,16 +165,31 @@ export function computeWeightedTotal(
   return inputTokens + outputTokens * 3 + cacheReadTokens * 0.1;
 }
 
+function extraTopLevelKeys(raw: Record<string, unknown>): string[] {
+  return Object.keys(raw).filter((k) => !ALLOWED_TOP_KEYS.has(k));
+}
+
+function isRunExportShape(raw: Record<string, unknown>): boolean {
+  return isObject(raw.meta) && isObject(raw.harness) && isObject(raw.efficiency);
+}
+
 export function detectPaste(raw: unknown): DetectedPaste {
   if (!isObject(raw)) {
     return { kind: "unknown", error: "Paste must be a JSON object." };
   }
-  if (
-    raw.schema === RUN_EXPORT_SCHEMA &&
-    isObject(raw.meta) &&
-    isObject(raw.harness) &&
-    isObject(raw.efficiency)
-  ) {
+
+  const extra = extraTopLevelKeys(raw);
+  if (extra.length && (raw.schema === RUN_EXPORT_SCHEMA_V1 || raw.schema === RUN_EXPORT_SCHEMA_V2)) {
+    return {
+      kind: "unknown",
+      error: `Unexpected top-level keys: ${extra.join(", ")}. Expected schema, meta, harness, efficiency only.`,
+    };
+  }
+
+  if (raw.schema === RUN_EXPORT_SCHEMA_V2 && isRunExportShape(raw)) {
+    return { kind: "run_export_v2", raw };
+  }
+  if (raw.schema === RUN_EXPORT_SCHEMA_V1 && isRunExportShape(raw)) {
     return { kind: "run_export_v1", raw };
   }
   if (
@@ -84,7 +202,7 @@ export function detectPaste(raw: unknown): DetectedPaste {
   return {
     kind: "unknown",
     error:
-      "Unrecognized JSON. Paste agentcofounder.run_export.v1 (schema/meta/harness/efficiency) or a harness result.json (status, tests_run, input_tokens).",
+      'Unrecognized JSON. Paste agentcofounder.run_export.v2 or .v1 (schema/meta/harness/efficiency), or legacy result.json.',
   };
 }
 
@@ -119,12 +237,14 @@ function applyOverrides(
   };
 }
 
-function normalizeV1(
+function normalizeRunExport(
   raw: Record<string, unknown>,
+  schema: typeof RUN_EXPORT_SCHEMA_V1 | typeof RUN_EXPORT_SCHEMA_V2,
+  kind: "run_export_v1" | "run_export_v2",
   overrides: PasteOverrides,
 ): NormalizeOk | NormalizeFail {
   const metaIn = isObject(raw.meta) ? raw.meta : {};
-  const harness = isObject(raw.harness) ? raw.harness : {};
+  const harnessIn = isObject(raw.harness) ? raw.harness : {};
   const efficiencyIn = isObject(raw.efficiency) ? raw.efficiency : {};
 
   let meta: RunExport["meta"] = {
@@ -142,34 +262,27 @@ function normalizeV1(
   meta = applyOverrides(meta, overrides);
 
   if (!meta.run_id) return { ok: false, error: "meta.run_id is required." };
-  if (!str(harness.status)) return { ok: false, error: "harness.status is required." };
+  if (!str(harnessIn.status)) return { ok: false, error: "harness.status is required." };
 
-  let weighted: number;
-  const existingWeighted = efficiencyIn.weighted_total;
-  if (typeof existingWeighted === "number" && Number.isFinite(existingWeighted)) {
-    weighted = existingWeighted;
-  } else {
-    weighted = computeWeightedTotal(
-      num(harness.input_tokens),
-      num(harness.output_tokens),
-      num(harness.cache_read_tokens),
-    );
+  const efficiency = parseEfficiency(efficiencyIn, harnessIn);
+  if (!Number.isFinite(efficiency.weighted_total)) {
+    return { ok: false, error: "efficiency.weighted_total must be a finite number." };
   }
 
   const exp: RunExport = {
-    schema: RUN_EXPORT_SCHEMA,
+    schema,
     meta,
-    harness: harness as RunExport["harness"],
-    efficiency: {
-      ...(efficiencyIn as RunExport["efficiency"]),
-      weighted_total: weighted,
-    },
+    harness: harnessIn as RunExport["harness"],
+    efficiency,
   };
+
+  const flowError = validateActionFlow(exp);
+  if (flowError) return { ok: false, error: flowError };
 
   const needsMeta = !meta.approach;
   return {
     ok: true,
-    kind: "run_export_v1",
+    kind,
     export: exp,
     suggested: {
       approach: meta.approach || undefined,
@@ -227,16 +340,12 @@ function normalizeResultJson(
 
   const needsMeta = missing.length > 0;
   if (needsMeta && Object.keys(overrides).length === 0) {
-    // First pass after detect — return suggested blanks for the form.
     return {
       ok: true,
       kind: "result_json",
       export: {
-        schema: RUN_EXPORT_SCHEMA,
-        meta: {
-          ...meta,
-          run_id: meta.run_id || "",
-        },
+        schema: RUN_EXPORT_SCHEMA_V1,
+        meta: { ...meta, run_id: meta.run_id || "" },
         harness: {
           status: str(raw.status) || "unknown",
           summary: str(raw.summary),
@@ -275,18 +384,14 @@ function normalizeResultJson(
   }
 
   if (missing.length) {
-    return {
-      ok: false,
-      error: `Complete run info required: ${missing.join(", ")}.`,
-    };
+    return { ok: false, error: `Complete run info required: ${missing.join(", ")}.` };
   }
-
   if (!str(raw.status)) {
     return { ok: false, error: "result.json status is required." };
   }
 
   const exp: RunExport = {
-    schema: RUN_EXPORT_SCHEMA,
+    schema: RUN_EXPORT_SCHEMA_V1,
     meta,
     harness: {
       status: str(raw.status),
@@ -344,19 +449,34 @@ export function inspectPaste(rawText: string): DetectedPaste | { kind: "invalid"
   return detectPaste(parsed);
 }
 
-/** Build canonical v1 from detected paste + optional overrides. */
+/** Build canonical export from detected paste + optional overrides. */
 export function normalizeDetected(
   detected: Extract<DetectedPaste, { kind: PasteKind }>,
   overrides: PasteOverrides = {},
 ): NormalizeOk | NormalizeFail {
+  if (detected.kind === "run_export_v2") {
+    return normalizeRunExport(detected.raw, RUN_EXPORT_SCHEMA_V2, "run_export_v2", overrides);
+  }
   if (detected.kind === "run_export_v1") {
-    return normalizeV1(detected.raw, overrides);
+    return normalizeRunExport(detected.raw, RUN_EXPORT_SCHEMA_V1, "run_export_v1", overrides);
   }
   return normalizeResultJson(detected.raw, overrides);
 }
 
+/** Strict parse for v1/v2 exports (rejects result.json). */
+export function parseRunExport(raw: unknown): RunExport | { error: string } {
+  const detected = detectPaste(raw);
+  if (detected.kind === "unknown") return { error: detected.error };
+  if (detected.kind === "result_json") {
+    return { error: "Legacy result.json — use normalizeDetected with overrides." };
+  }
+  const normalized = normalizeDetected(detected, {});
+  if (!normalized.ok) return { error: normalized.error };
+  return normalized.export;
+}
+
 /** @deprecated prefer inspectPaste + normalizeDetected */
-export function parseRunExport(rawText: string): NormalizeOk | NormalizeFail {
+export function parseRunExportText(rawText: string): NormalizeOk | NormalizeFail {
   const inspected = inspectPaste(rawText);
   if (inspected.kind === "invalid" || inspected.kind === "unknown") {
     return { ok: false, error: inspected.error };
