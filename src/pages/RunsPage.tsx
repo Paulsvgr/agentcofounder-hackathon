@@ -48,6 +48,7 @@ export function RunsPage() {
   const [experiments, setExperiments] = useState<string[]>([]);
   const [branch, setBranch] = useState("");
   const [provider, setProvider] = useState("");
+  const [model, setModel] = useState("");
   const [status, setStatus] = useState("");
   const [sort, setSort] = useState<SortKey>("weighted_asc");
   const [hideNoise, setHideNoise] = useState(true);
@@ -97,6 +98,20 @@ export function RunsPage() {
     return [...set].sort();
   }, [runs]);
 
+  const models = useMemo(() => {
+    const set = new Set<string>();
+    for (const r of runs) {
+      if (provider && r.data.export?.meta?.provider !== provider) continue;
+      const m = r.data.export?.meta?.model;
+      if (m) set.add(m);
+    }
+    return [...set].sort();
+  }, [runs, provider]);
+
+  useEffect(() => {
+    if (model && !models.includes(model)) setModel("");
+  }, [model, models]);
+
   const lineOptions = useMemo(() => {
     if (!manifestReady) return [];
     const set = new Set<string>();
@@ -136,6 +151,9 @@ export function RunsPage() {
     if (provider) {
       list = list.filter((r) => r.data.export?.meta?.provider === provider);
     }
+    if (model) {
+      list = list.filter((r) => r.data.export?.meta?.model === model);
+    }
     if (status) {
       list = list.filter(
         (r) => (r.data.export?.harness?.status || "").toLowerCase() === status,
@@ -161,7 +179,7 @@ export function RunsPage() {
       return wa - wb;
     });
     return list;
-  }, [runs, author, lines, experiments, branch, provider, status, sort, hideNoise, manifestReady]);
+  }, [runs, author, lines, experiments, branch, provider, model, status, sort, hideNoise, manifestReady]);
 
   const chartRuns = useMemo(() => {
     if (includeExcluded) return filtered;
@@ -247,6 +265,17 @@ export function RunsPage() {
               {providers.map((p) => (
                 <option key={p} value={p}>
                   {p}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div className="field">
+            <label htmlFor="f-model">Model</label>
+            <select id="f-model" value={model} onChange={(e) => setModel(e.target.value)}>
+              <option value="">All</option>
+              {models.map((m) => (
+                <option key={m} value={m}>
+                  {m}
                 </option>
               ))}
             </select>
