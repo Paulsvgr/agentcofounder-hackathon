@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
-import { Link, useNavigate, useSearchParams } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { CohortActionFlow } from "../components/CohortActionFlow";
+import { RunActionModal } from "../components/RunActionModal";
 import {
   COHORT_PRESETS,
   cohortLabelMap,
@@ -17,7 +18,6 @@ function parsePreset(value: string | null): CohortPreset {
 }
 
 export function CohortPage() {
-  const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const preset = parsePreset(searchParams.get("preset"));
   const config = COHORT_PRESETS[preset];
@@ -25,6 +25,7 @@ export function CohortPage() {
   const [runs, setRuns] = useState<HackathonRunRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [actionRun, setActionRun] = useState<HackathonRunRecord | null>(null);
 
   const labels = useMemo(() => cohortLabelMap(preset), [preset]);
 
@@ -118,7 +119,7 @@ export function CohortPage() {
                     <tr
                       key={entry.run_id}
                       className={run ? "clickable" : undefined}
-                      onClick={() => run && navigate(`/runs/${run.id}`)}
+                      onClick={() => run && setActionRun(run)}
                     >
                       <td>{entry.label}</td>
                       <td>{shortRunId(entry.run_id)}</td>
@@ -148,6 +149,10 @@ export function CohortPage() {
           </>
         )}
       </section>
+
+      {actionRun && (
+        <RunActionModal run={actionRun} onClose={() => setActionRun(null)} />
+      )}
     </div>
   );
 }

@@ -119,6 +119,12 @@ export function RunDetailPage() {
             </p>
           </div>
           <div className="detail-badges">
+            <Link to={`/runs/${run.id}/rate`} className="btn btn-ghost btn-sm">
+              Fix rating
+            </Link>
+            <Link to={`/runs/${run.id}/edit`} className="btn btn-ghost btn-sm">
+              Edit run
+            </Link>
             {schemaBadge(exp)}
             <span
               className={

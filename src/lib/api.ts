@@ -125,6 +125,21 @@ export async function getRun(id: string): Promise<HackathonRunRecord> {
   return request<HackathonRunRecord>(`/api/v1/runs/${id}/`);
 }
 
+export async function updateRun(input: {
+  id: string;
+  person?: string;
+  data: HackathonRunData;
+  accessKey: string;
+}): Promise<HackathonRunRecord> {
+  const body: { person?: string; data: HackathonRunData } = { data: input.data };
+  if (input.person) body.person = input.person;
+  return request<HackathonRunRecord>(`/api/v1/runs/${input.id}/`, {
+    method: "PATCH",
+    accessKey: input.accessKey,
+    body: JSON.stringify(body),
+  });
+}
+
 export async function createRun(input: {
   person: string;
   data: HackathonRunData;

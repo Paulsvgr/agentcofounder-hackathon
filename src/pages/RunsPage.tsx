@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { RunsCharts } from "../components/RunsCharts";
+import { RunActionModal } from "../components/RunActionModal";
 import { TokenStatsPanel } from "../components/TokenStats";
 import {
   effectiveHuman,
@@ -36,7 +36,6 @@ function toggleInList(list: string[], value: string): string[] {
 }
 
 export function RunsPage() {
-  const navigate = useNavigate();
   const [runs, setRuns] = useState<HackathonRunRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -53,6 +52,7 @@ export function RunsPage() {
   const [sort, setSort] = useState<SortKey>("weighted_asc");
   const [hideNoise, setHideNoise] = useState(true);
   const [includeExcluded, setIncludeExcluded] = useState(false);
+  const [actionRun, setActionRun] = useState<HackathonRunRecord | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -351,7 +351,13 @@ export function RunsPage() {
           <>
             <TokenStatsPanel runs={filtered} />
 
-            <RunsCharts runs={chartRuns} onSelectRun={(id) => navigate(`/runs/${id}`)} />
+            <RunsCharts
+              runs={chartRuns}
+              onSelectRun={(runId) => {
+                const run = chartRuns.find((r) => r.id === runId);
+                if (run) setActionRun(run);
+              }}
+            />
 
             <div className="table-wrap">
               <table className="runs">
@@ -385,7 +391,7 @@ export function RunsPage() {
                     const exKey = experimentKey(run);
                     const human = effectiveHuman(run);
                     return (
-                      <tr key={run.id} onClick={() => navigate(`/runs/${run.id}`)}>
+                      <tr key={run.id} onClick={() => setActionRun(run)}>
                         <td className="mono" title={exp?.meta?.run_id}>{shortRunId(exp?.meta?.run_id)}</td>
                         <td>{run.person}</td>
                         <td title={methodTooltip(run)}>{methodLabel(run)}</td>
@@ -412,6 +418,10 @@ export function RunsPage() {
           </>
         )}
       </section>
+
+      {actionRun && (
+        <RunActionModal run={actionRun} onClose={() => setActionRun(null)} />
+      )}
     </div>
   );
 }
