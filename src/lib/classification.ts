@@ -21,6 +21,14 @@ const EXPERIMENTS = [
   "exp2-stop-treatment",
   "exp3-test-control",
   "exp3-test-treatment",
+  "exp4-digest-control",
+  "exp4-digest-treatment",
+  "exp5-template-control",
+  "exp5-template-treatment",
+  "exp6-reporter-control",
+  "exp6-reporter-treatment",
+  "exp5b-storage-control",
+  "exp5b-storage-treatment",
   "legacy",
   "legacy-smoke",
   "unknown",
@@ -72,7 +80,11 @@ function lineFromApproach(approach: string): RunClassification["line"] {
     approach.startsWith("rtl-") ||
     low.startsWith("stop-") ||
     low.startsWith("test-policy-") ||
-    low.startsWith("test-")
+    low.startsWith("test-") ||
+    low.startsWith("digest-") ||
+    low.startsWith("template-") ||
+    low.startsWith("reporter-") ||
+    low.startsWith("storage-")
   ) {
     return "F";
   }
@@ -103,6 +115,14 @@ function experimentFromApproach(
   if (approach.startsWith("test-policy-treatment") || approach.startsWith("test-treatment")) {
     return "exp3-test-treatment";
   }
+  if (approach.startsWith("digest-control")) return "exp4-digest-control";
+  if (approach.startsWith("digest-treatment")) return "exp4-digest-treatment";
+  if (approach.startsWith("template-control")) return "exp5-template-control";
+  if (approach.startsWith("template-treatment")) return "exp5-template-treatment";
+  if (approach.startsWith("reporter-control")) return "exp6-reporter-control";
+  if (approach.startsWith("reporter-treatment")) return "exp6-reporter-treatment";
+  if (approach.startsWith("storage-control")) return "exp5b-storage-control";
+  if (approach.startsWith("storage-treatment")) return "exp5b-storage-treatment";
   if (gitBranch === "exp/auto-verify") return "unknown";
   if (approach.toLowerCase().includes("abort")) return "legacy-smoke";
   if (approach.includes("-prime") || ["A-prime", "B-prime"].includes(approach)) {

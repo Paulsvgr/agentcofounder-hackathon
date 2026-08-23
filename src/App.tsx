@@ -4,6 +4,7 @@ import { ThemeProvider } from "./lib/theme";
 import { AddRunPage } from "./pages/AddRunPage";
 import { CohortPage } from "./pages/CohortPage";
 import { EditRunPage } from "./pages/EditRunPage";
+import { ExperimentsPage } from "./pages/ExperimentsPage";
 import { FixRatingPage } from "./pages/FixRatingPage";
 import { HowToPage } from "./pages/HowToPage";
 import { RunDetailPage } from "./pages/RunDetailPage";
@@ -19,6 +20,7 @@ export default function App() {
             <Route path="add" element={<AddRunPage />} />
             <Route path="how-to" element={<HowToPage />} />
             <Route path="cohort" element={<CohortPage />} />
+            <Route path="experiments" element={<ExperimentsPage />} />
             <Route path="runs/:id" element={<RunDetailPage />} />
             <Route path="runs/:id/rate" element={<FixRatingPage />} />
             <Route path="runs/:id/edit" element={<EditRunPage />} />

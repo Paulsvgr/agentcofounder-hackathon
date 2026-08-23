@@ -667,6 +667,82 @@ a.chip.active {
   padding: 0.25rem 0.55rem;
 }
 
+.experiment-grid {
+  display: grid;
+  gap: 1rem;
+}
+
+.experiment-card {
+  scroll-margin-top: 1rem;
+}
+
+.experiment-card-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+  margin-bottom: 0.75rem;
+}
+
+.experiment-card-title,
+.experiment-context-title {
+  margin: 0;
+  font-size: 1.05rem;
+}
+
+.experiment-card-arms {
+  margin: 0.25rem 0 0;
+  font-size: 0.82rem;
+}
+
+.experiment-dl {
+  margin: 0;
+  display: grid;
+  gap: 0.65rem;
+}
+
+.experiment-dl dt {
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+  margin-bottom: 0.15rem;
+}
+
+.experiment-dl dd {
+  margin: 0;
+  font-size: 0.92rem;
+  line-height: 1.45;
+}
+
+.experiment-card-actions {
+  margin-top: 1rem;
+}
+
+.experiment-links {
+  font-size: 0.85rem;
+  margin-top: 0.75rem;
+}
+
+.experiment-context {
+  margin-top: 0.5rem;
+  border-left: 3px solid var(--accent);
+}
+
+.experiment-context-detail {
+  margin: 0.5rem 0 0;
+  font-size: 0.88rem;
+  line-height: 1.45;
+}
+
+.experiment-context-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+}
+
 .detail-badges {
   display: flex;
   flex-wrap: wrap;

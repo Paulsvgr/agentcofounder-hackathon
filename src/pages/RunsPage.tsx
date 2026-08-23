@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { RunsCharts } from "../components/RunsCharts";
+import { ExperimentStudyPanel } from "../components/ExperimentStudyPanel";
 import { RunActionModal } from "../components/RunActionModal";
 import { TokenStatsPanel } from "../components/TokenStats";
 import {
@@ -12,6 +14,8 @@ import {
   methodTooltip,
   shouldHideEarlySmoke,
 } from "../lib/classification";
+import { studyById, studiesMatchingArms } from "../lib/experimentCatalog";
+import type { ExperimentStudyId } from "../types/experiment";
 import { fetchPeople, listRuns } from "../lib/api";
 import { shortRunId } from "../lib/actionFlow";
 import {
@@ -36,6 +40,7 @@ function toggleInList(list: string[], value: string): string[] {
 }
 
 export function RunsPage() {
+  const [searchParams, setSearchParams] = useSearchParams();
   const [runs, setRuns] = useState<HackathonRunRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -79,6 +84,30 @@ export function RunsPage() {
       cancelled = true;
     };
   }, []);
+
+  useEffect(() => {
+    const studyParam = searchParams.get("study");
+    if (!studyParam || !manifestReady) return;
+    const study = studyById(studyParam as ExperimentStudyId);
+    if (!study) return;
+    setExperiments([...study.arms]);
+    if (study.line) setLines([study.line]);
+  }, [searchParams, manifestReady]);
+
+  const matchedStudies = useMemo(
+    () => studiesMatchingArms(experiments),
+    [experiments],
+  );
+
+  const activeStudy = matchedStudies.length === 1 ? matchedStudies[0] : null;
+
+  function applyStudyFilter(studyId: ExperimentStudyId) {
+    const study = studyById(studyId);
+    if (!study) return;
+    setExperiments([...study.arms]);
+    if (study.line) setLines([study.line]);
+    setSearchParams({ study: study.id });
+  }
 
   const branches = useMemo(() => {
     const set = new Set<string>();
@@ -342,6 +371,13 @@ export function RunsPage() {
               </button>
             ))}
           </div>
+        )}
+
+        {activeStudy && (
+          <ExperimentStudyPanel
+            study={activeStudy}
+            onApplyFilter={() => applyStudyFilter(activeStudy.id)}
+          />
         )}
 
         {loading && <p className="muted">Loading…</p>}

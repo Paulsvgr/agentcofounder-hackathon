@@ -20,6 +20,12 @@ export function Layout() {
                 Runs
               </NavLink>
               <NavLink
+                to="/experiments"
+                className={({ isActive }) => (isActive ? "active" : undefined)}
+              >
+                Experiments
+              </NavLink>
+              <NavLink
                 to="/cohort"
                 className={({ isActive }) => (isActive ? "active" : undefined)}
               >
