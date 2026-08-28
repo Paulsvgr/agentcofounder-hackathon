@@ -208,13 +208,42 @@ export function deriveFlags(
   };
 }
 
+function isStaleClassification(cls: RunClassification): boolean {
+  return cls.experiment === "legacy" || cls.experiment === "unknown";
+}
+
+function classificationFromApproachOnly(run: HackathonRunRecord): RunClassification {
+  const approach = (run.data.export?.meta?.approach || run.data.approach_kind || "").trim();
+  const gitBranch = run.data.git_branch || run.data.export?.meta?.git_branch;
+  const line = lineFromApproach(approach);
+  const experiment = experimentFromApproach(approach, gitBranch);
+  const runIndex = parseRunIndex(approach);
+  let displayLabel = buildDisplayLabel(line, experiment, runIndex);
+  if (approach.includes("-r2-")) {
+    displayLabel = `${displayLabel} · r2`;
+  }
+  return {
+    line,
+    experiment,
+    run_index: runIndex,
+    display_label: displayLabel,
+    legacy_approach: approach || "unknown",
+  };
+}
+
 export function effectiveClassification(run: HackathonRunRecord): RunClassification {
   const runId = run.data.export?.meta?.run_id || run.data.run_id;
   if (runId && manifestRuns?.[runId]?.classification) {
     return manifestRuns[runId]!.classification!;
   }
-  if (run.data.classification?.display_label) {
-    return run.data.classification;
+
+  const fromApproach = classificationFromApproachOnly(run);
+  const stored = run.data.classification?.display_label ? run.data.classification : null;
+  if (stored && isStaleClassification(stored) && !isStaleClassification(fromApproach)) {
+    return fromApproach;
+  }
+  if (stored) {
+    return stored;
   }
   return deriveClassification(run);
 }
