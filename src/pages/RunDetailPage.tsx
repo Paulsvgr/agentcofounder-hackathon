@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { ActionFlowChart } from "../components/ActionFlowChart";
+import { RunManifestPanel } from "../components/RunManifestPanel";
 import { getRun } from "../lib/api";
 import { RunTokenStats } from "../components/TokenStats";
 import { shortRunId } from "../lib/actionFlow";
@@ -197,6 +198,8 @@ export function RunDetailPage() {
           </div>
         </div>
       </section>
+
+      <RunManifestPanel run={run} />
 
       {showActionFlow && exp && (
         <section className="panel">

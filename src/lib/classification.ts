@@ -36,30 +36,33 @@ const EXPERIMENTS = [
 
 export { LINES, EXPERIMENTS };
 
-type ManifestEntry = {
+type ClassificationOverlayEntry = {
   classification?: RunClassification;
   human?: Partial<RunHuman>;
   flags?: RunFlags;
 };
 
-let manifestRuns: Record<string, ManifestEntry> | null = null;
-let manifestPromise: Promise<Record<string, ManifestEntry>> | null = null;
+let classificationOverlay: Record<string, ClassificationOverlayEntry> | null = null;
+let classificationOverlayPromise: Promise<Record<string, ClassificationOverlayEntry>> | null =
+  null;
 
-export async function loadClassificationManifest(): Promise<Record<string, ManifestEntry>> {
-  if (manifestRuns) return manifestRuns;
-  if (!manifestPromise) {
-    manifestPromise = fetch("/runs-classification.json")
+export async function loadClassificationManifest(): Promise<
+  Record<string, ClassificationOverlayEntry>
+> {
+  if (classificationOverlay) return classificationOverlay;
+  if (!classificationOverlayPromise) {
+    classificationOverlayPromise = fetch("/runs-classification.json")
       .then((r) => (r.ok ? r.json() : { runs: {} }))
       .then((body) => {
-        manifestRuns = (body?.runs as Record<string, ManifestEntry>) || {};
-        return manifestRuns;
+        classificationOverlay = (body?.runs as Record<string, ClassificationOverlayEntry>) || {};
+        return classificationOverlay;
       })
       .catch(() => {
-        manifestRuns = {};
-        return manifestRuns;
+        classificationOverlay = {};
+        return classificationOverlay;
       });
   }
-  return manifestPromise;
+  return classificationOverlayPromise;
 }
 
 function parseRunIndex(approach: string): number | null {
@@ -233,8 +236,8 @@ function classificationFromApproachOnly(run: HackathonRunRecord): RunClassificat
 
 export function effectiveClassification(run: HackathonRunRecord): RunClassification {
   const runId = run.data.export?.meta?.run_id || run.data.run_id;
-  if (runId && manifestRuns?.[runId]?.classification) {
-    return manifestRuns[runId]!.classification!;
+  if (runId && classificationOverlay?.[runId]?.classification) {
+    return classificationOverlay[runId]!.classification!;
   }
 
   const fromApproach = classificationFromApproachOnly(run);
@@ -250,8 +253,8 @@ export function effectiveClassification(run: HackathonRunRecord): RunClassificat
 
 export function effectiveFlags(run: HackathonRunRecord): RunFlags {
   const runId = run.data.export?.meta?.run_id || run.data.run_id;
-  if (runId && manifestRuns?.[runId]?.flags) {
-    return manifestRuns[runId]!.flags!;
+  if (runId && classificationOverlay?.[runId]?.flags) {
+    return classificationOverlay[runId]!.flags!;
   }
   if (run.data.flags) {
     return run.data.flags;
@@ -278,8 +281,8 @@ export function effectiveHuman(run: HackathonRunRecord): RunHuman {
     };
   }
   const runId = run.data.export?.meta?.run_id || run.data.run_id;
-  if (runId && manifestRuns?.[runId]?.human) {
-    const h = manifestRuns[runId]!.human!;
+  if (runId && classificationOverlay?.[runId]?.human) {
+    const h = classificationOverlay[runId]!.human!;
     return {
       app_rating: h.app_rating ?? base.app_rating,
       app_comment: base.app_comment,
@@ -325,6 +328,8 @@ export function methodTooltip(run: HackathonRunRecord): string {
   return parts.join("\n");
 }
 
-export function setManifestCache(runs: Record<string, ManifestEntry>): void {
-  manifestRuns = runs;
+export function setClassificationOverlayCache(
+  runs: Record<string, ClassificationOverlayEntry>,
+): void {
+  classificationOverlay = runs;
 }

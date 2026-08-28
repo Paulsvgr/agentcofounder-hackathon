@@ -29,7 +29,9 @@ npm run export:run -- <run-id> --approach A-baseline-1`}</pre>
         <ul className="list-plain">
           <li>
             Export file: <code>artifacts/exports/&lt;run-id&gt;.json</code> — prefer{" "}
-            <code>agentcofounder.run_export.v2</code> (action-flow chart on run detail)
+            <code>agentcofounder.run_export.v2</code> (action-flow chart on run detail).
+            Optional top-level <code>manifest</code> (<code>agentcofounder.run_manifest.v1</code>)
+            is stored as a sibling on the run — not inside export.
           </li>
           <li>
             Legacy v1 or <code>result.json</code> still accepted — server normalizes; phase / wall time may be empty

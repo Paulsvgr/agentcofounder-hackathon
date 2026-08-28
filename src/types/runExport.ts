@@ -1,3 +1,5 @@
+import type { RunManifest } from "./runManifest";
+
 /** Paste contract from harness: run_export v1 (legacy) or v2 (action-flow). */
 
 export const RUN_EXPORT_SCHEMA_V1 = "agentcofounder.run_export.v1" as const;
@@ -199,6 +201,8 @@ export type HackathonRunData = {
   human?: RunHuman;
   flags?: RunFlags;
   export: RunExport;
+  /** Provenance sibling — not nested inside export. */
+  manifest?: RunManifest | null;
 };
 
 export type HackathonRunRecord = {

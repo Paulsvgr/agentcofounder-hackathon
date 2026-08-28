@@ -1,4 +1,5 @@
 import { validateActionFlow } from "./actionFlow";
+import { validateRunManifest } from "./runManifest";
 import {
   RUN_EXPORT_SCHEMA_V1,
   RUN_EXPORT_SCHEMA_V2,
@@ -8,22 +9,25 @@ import {
   type RunExport,
   type RunExportEfficiency,
 } from "../types/runExport";
+import type { RunManifest } from "../types/runManifest";
 
 export type DetectedPaste =
-  | { kind: PasteKind; raw: Record<string, unknown> }
+  | { kind: PasteKind; raw: Record<string, unknown>; manifest: RunManifest | null }
   | { kind: "unknown"; error: string };
 
 export type NormalizeOk = {
   ok: true;
   kind: PasteKind;
   export: RunExport;
+  manifest: RunManifest | null;
   suggested: PasteOverrides;
   needsMeta: boolean;
 };
 
 export type NormalizeFail = { ok: false; error: string };
 
-const ALLOWED_TOP_KEYS = new Set(["schema", "meta", "harness", "efficiency"]);
+const ALLOWED_EXPORT_KEYS = new Set(["schema", "meta", "harness", "efficiency"]);
+const TRANSPORT_TOP_KEYS = new Set([...ALLOWED_EXPORT_KEYS, "manifest"]);
 
 function isObject(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
@@ -166,7 +170,16 @@ export function computeWeightedTotal(
 }
 
 function extraTopLevelKeys(raw: Record<string, unknown>): string[] {
-  return Object.keys(raw).filter((k) => !ALLOWED_TOP_KEYS.has(k));
+  return Object.keys(raw).filter((k) => !TRANSPORT_TOP_KEYS.has(k));
+}
+
+function readTransportManifest(raw: Record<string, unknown>): RunManifest | null | "invalid" {
+  if (!("manifest" in raw)) return null;
+  try {
+    return validateRunManifest(raw.manifest);
+  } catch {
+    return "invalid";
+  }
 }
 
 function isRunExportShape(raw: Record<string, unknown>): boolean {
@@ -178,31 +191,39 @@ export function detectPaste(raw: unknown): DetectedPaste {
     return { kind: "unknown", error: "Paste must be a JSON object." };
   }
 
+  const manifestRead = readTransportManifest(raw);
+  if (manifestRead === "invalid") {
+    return {
+      kind: "unknown",
+      error: 'Invalid manifest — expected schema "agentcofounder.run_manifest.v1" and run_id.',
+    };
+  }
+
   const extra = extraTopLevelKeys(raw);
   if (extra.length && (raw.schema === RUN_EXPORT_SCHEMA_V1 || raw.schema === RUN_EXPORT_SCHEMA_V2)) {
     return {
       kind: "unknown",
-      error: `Unexpected top-level keys: ${extra.join(", ")}. Expected schema, meta, harness, efficiency only.`,
+      error: `Unexpected top-level keys: ${extra.join(", ")}. Expected schema, meta, harness, efficiency, optional manifest.`,
     };
   }
 
   if (raw.schema === RUN_EXPORT_SCHEMA_V2 && isRunExportShape(raw)) {
-    return { kind: "run_export_v2", raw };
+    return { kind: "run_export_v2", raw, manifest: manifestRead };
   }
   if (raw.schema === RUN_EXPORT_SCHEMA_V1 && isRunExportShape(raw)) {
-    return { kind: "run_export_v1", raw };
+    return { kind: "run_export_v1", raw, manifest: manifestRead };
   }
   if (
     typeof raw.status === "string" &&
     Array.isArray(raw.tests_run) &&
     typeof raw.input_tokens === "number"
   ) {
-    return { kind: "result_json", raw };
+    return { kind: "result_json", raw, manifest: manifestRead };
   }
   return {
     kind: "unknown",
     error:
-      'Unrecognized JSON. Paste agentcofounder.run_export.v2 or .v1 (schema/meta/harness/efficiency), or legacy result.json.',
+      'Unrecognized JSON. Paste agentcofounder.run_export.v2 or .v1 (schema/meta/harness/efficiency, optional manifest), or legacy result.json.',
   };
 }
 
@@ -242,6 +263,7 @@ function normalizeRunExport(
   schema: typeof RUN_EXPORT_SCHEMA_V1 | typeof RUN_EXPORT_SCHEMA_V2,
   kind: "run_export_v1" | "run_export_v2",
   overrides: PasteOverrides,
+  manifest: RunManifest | null,
 ): NormalizeOk | NormalizeFail {
   const metaIn = isObject(raw.meta) ? raw.meta : {};
   const harnessIn = isObject(raw.harness) ? raw.harness : {};
@@ -284,6 +306,7 @@ function normalizeRunExport(
     ok: true,
     kind,
     export: exp,
+    manifest,
     suggested: {
       approach: meta.approach || undefined,
       provider: meta.provider || undefined,
@@ -299,6 +322,7 @@ function normalizeRunExport(
 function normalizeResultJson(
   raw: Record<string, unknown>,
   overrides: PasteOverrides,
+  manifest: RunManifest | null,
 ): NormalizeOk | NormalizeFail {
   const inputTokens = num(raw.input_tokens);
   const outputTokens = num(raw.output_tokens);
@@ -374,6 +398,7 @@ function normalizeResultJson(
           phase_heuristic: [],
         },
       },
+      manifest,
       suggested: {
         ...suggested,
         run_id: suggested.run_id || meta.run_id,
@@ -426,6 +451,7 @@ function normalizeResultJson(
     ok: true,
     kind: "result_json",
     export: exp,
+    manifest,
     suggested: {
       approach: meta.approach || undefined,
       provider: meta.provider || undefined,
@@ -455,12 +481,24 @@ export function normalizeDetected(
   overrides: PasteOverrides = {},
 ): NormalizeOk | NormalizeFail {
   if (detected.kind === "run_export_v2") {
-    return normalizeRunExport(detected.raw, RUN_EXPORT_SCHEMA_V2, "run_export_v2", overrides);
+    return normalizeRunExport(
+      detected.raw,
+      RUN_EXPORT_SCHEMA_V2,
+      "run_export_v2",
+      overrides,
+      detected.manifest,
+    );
   }
   if (detected.kind === "run_export_v1") {
-    return normalizeRunExport(detected.raw, RUN_EXPORT_SCHEMA_V1, "run_export_v1", overrides);
+    return normalizeRunExport(
+      detected.raw,
+      RUN_EXPORT_SCHEMA_V1,
+      "run_export_v1",
+      overrides,
+      detected.manifest,
+    );
   }
-  return normalizeResultJson(detected.raw, overrides);
+  return normalizeResultJson(detected.raw, overrides, detected.manifest);
 }
 
 /** Strict parse for v1/v2 exports (rejects result.json). */

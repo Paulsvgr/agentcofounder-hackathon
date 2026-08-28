@@ -29,6 +29,9 @@ export function patchRunExportAndHuman(
 ): HackathonRunData {
   const data = structuredClone(run.data);
   data.export = exportDoc;
+  if ("manifest" in (data.export as object)) {
+    delete (data.export as Record<string, unknown>).manifest;
+  }
   data.run_id = exportDoc.meta.run_id;
   data.git_branch = exportDoc.meta.git_branch;
   data.git_commit = exportDoc.meta.git_commit;

@@ -6,7 +6,8 @@ Canonical product spec for the hackathon runs UI. Implementation lives in this r
 
 - **Primary:** `agentcofounder.run_export.v2` — includes `efficiency.action_flow[]`
 - **Legacy:** `agentcofounder.run_export.v1` — phase heuristic only, no action-flow chart
-- **Reject** other schemas; top-level keys: `schema`, `meta`, `harness`, `efficiency` only
+- **Reject** other schemas; top-level keys: `schema`, `meta`, `harness`, `efficiency`, optional `manifest`
+- **Transport:** `manifest` (`agentcofounder.run_manifest.v1`) may appear top-level on paste — stored as `HackathonRun.data.manifest` sibling, stripped from `data.export`
 
 Human fields (`author`, ratings, comments) are UI/DB only — never in paste JSON.
 

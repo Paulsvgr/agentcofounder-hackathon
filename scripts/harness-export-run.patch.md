@@ -18,4 +18,8 @@ npm run export:run -- 2026-08-21T23-45-52-404Z --approach A-autoverify-owned-1
 RUN_APPROACH=A-baseline-2 npm run export:run -- <run-id>
 ```
 
-The runs app prefers `meta.classification` on paste; manifest still overrides historical runs and carries human fields.
+The runs app prefers `meta.classification` on paste; classification overlay still overrides historical runs and carries human fields.
+
+## Run manifest (7a)
+
+In `export-run.ts`, attach `artifacts/runs/<id>/run-manifest.json` as top-level `manifest` on the export payload (not inside `meta` or `efficiency`). Legacy runs without the file → `manifest: null`. Django splits on ingest into `data.manifest` sibling.
