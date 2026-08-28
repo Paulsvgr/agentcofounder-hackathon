@@ -139,13 +139,18 @@ function experimentLabel(experiment: string): string {
   return experiment.replace(/-/g, " ");
 }
 
-function buildDisplayLabel(
+export function buildDisplayLabel(
   line: RunClassification["line"],
   experiment: RunClassification["experiment"],
   runIndex: number | null,
 ): string {
   const base = `${line} · ${experimentLabel(experiment)}`;
   return runIndex !== null ? `${base} · run ${runIndex}` : base;
+}
+
+export function hasClassificationOverlay(runId: string | null | undefined): boolean {
+  if (!runId || !classificationOverlay) return false;
+  return Boolean(classificationOverlay[runId]?.classification);
 }
 
 function shouldExclude(experiment: string, runComment: string, appComment: string): boolean {

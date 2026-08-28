@@ -1,4 +1,11 @@
-import type { HackathonRunData, HackathonRunRecord, RunExport, RunHuman } from "../types/runExport";
+import type {
+  HackathonRunData,
+  HackathonRunRecord,
+  RunClassification,
+  RunExport,
+  RunHuman,
+} from "../types/runExport";
+import { deriveFlags } from "./classification";
 
 export type HumanPatch = {
   app_rating: number | null;
@@ -19,6 +26,25 @@ export function patchRunHumanFields(
     app_comment: human.app_comment,
     run_comment: human.run_comment,
   };
+  return data;
+}
+
+export function patchRunExportHumanAndClassification(
+  run: HackathonRunRecord,
+  exportDoc: RunExport,
+  human: HumanPatch,
+  classification: RunClassification,
+): HackathonRunData {
+  const data = patchRunExportAndHuman(run, exportDoc, human);
+  data.classification = classification;
+  data.export = {
+    ...data.export,
+    meta: {
+      ...data.export.meta,
+      classification,
+    },
+  };
+  data.flags = deriveFlags(classification, human.run_comment, human.app_comment);
   return data;
 }
 

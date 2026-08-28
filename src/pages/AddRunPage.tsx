@@ -1,12 +1,19 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { HowToExportPanel } from "../components/HowToExportPanel";
+import { ClassificationFields } from "../components/ClassificationFields";
 import {
   createRunFromPaste,
   fetchPeople,
   getStoredAccessKey,
   setStoredAccessKey,
 } from "../lib/api";
+import {
+  classificationFromExport,
+  classificationToFormState,
+  formStateToClassification,
+  type ClassificationFormState,
+} from "../lib/classificationForm";
 import {
   inspectPaste,
   normalizeDetected,
@@ -63,6 +70,20 @@ export function AddRunPage() {
   const [accessKey, setAccessKey] = useState(getStoredAccessKey);
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+  const [classificationForm, setClassificationForm] = useState<ClassificationFormState>(() =>
+    classificationToFormState({
+      line: "unknown",
+      experiment: "unknown",
+      run_index: null,
+      display_label: "unknown · unknown",
+    }),
+  );
+  const [classificationTouched, setClassificationTouched] = useState(false);
+
+  function syncClassificationFromExport(exportDoc: RunExport) {
+    if (classificationTouched) return;
+    setClassificationForm(classificationToFormState(classificationFromExport(exportDoc)));
+  }
 
   const preview = useMemo(() => {
     if (!parsed) return null;
@@ -118,6 +139,7 @@ export function AddRunPage() {
 
     fillMetaForm(first.suggested);
     setParsed(first.export);
+    syncClassificationFromExport(first.export);
 
     if (inspected.kind === "result_json" || first.needsMeta) {
       setStep("meta");
@@ -140,6 +162,7 @@ export function AddRunPage() {
     }
     setParsed(next.export);
     fillMetaForm(next.suggested);
+    syncClassificationFromExport(next.export);
     setStep("human");
   }
 
@@ -183,6 +206,7 @@ export function AddRunPage() {
         author,
         paste: detected.raw,
         overrides: overridesFromForm(),
+        classification: formStateToClassification(classificationForm),
         app_rating: ratingNum,
         app_comment: appComment.trim(),
         run_comment: runComment.trim(),
@@ -340,6 +364,15 @@ export function AddRunPage() {
                 <strong>{preview.runId}</strong> · {preview.schema} · {preview.approach} · status{" "}
                 {preview.status} · weighted {preview.weighted}
               </div>
+
+              <ClassificationFields
+                value={classificationForm}
+                onChange={(next) => {
+                  setClassificationTouched(true);
+                  setClassificationForm(next);
+                }}
+                idPrefix="add-cls"
+              />
 
               <div className="row">
                 <div className="field">

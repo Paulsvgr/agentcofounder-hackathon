@@ -3,6 +3,7 @@ import type {
   HackathonRunRecord,
   HumanFields,
   PasteOverrides,
+  RunClassification,
   RunExport,
 } from "../types/runExport";
 
@@ -157,6 +158,7 @@ export async function createRunFromPaste(input: {
   author: string;
   paste: unknown;
   overrides?: PasteOverrides;
+  classification?: RunClassification;
   app_rating?: number | null;
   app_comment?: string;
   run_comment?: string;
@@ -169,6 +171,7 @@ export async function createRunFromPaste(input: {
       author: input.author,
       paste: input.paste,
       overrides: input.overrides || {},
+      classification: input.classification,
       app_rating: input.app_rating ?? null,
       app_comment: input.app_comment || "",
       run_comment: input.run_comment || "",

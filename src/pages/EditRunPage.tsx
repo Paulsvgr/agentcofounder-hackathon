@@ -7,10 +7,21 @@ import {
   setStoredAccessKey,
   updateRun,
 } from "../lib/api";
-import { loadClassificationManifest, methodLabel } from "../lib/classification";
+import { ClassificationFields } from "../components/ClassificationFields";
+import {
+  effectiveClassification,
+  hasClassificationOverlay,
+  loadClassificationManifest,
+  methodLabel,
+} from "../lib/classification";
+import {
+  classificationToFormState,
+  formStateToClassification,
+  type ClassificationFormState,
+} from "../lib/classificationForm";
 import { shortRunId } from "../lib/actionFlow";
 import { parseRunExport } from "../lib/parseExport";
-import { humanFromRun, patchRunExportAndHuman } from "../lib/runPatch";
+import { humanFromRun, patchRunExportHumanAndClassification } from "../lib/runPatch";
 import { HACKATHON_AUTHORS } from "../types/runExport";
 
 export function EditRunPage() {
@@ -28,6 +39,15 @@ export function EditRunPage() {
   const [runComment, setRunComment] = useState("");
   const [accessKey, setAccessKey] = useState(getStoredAccessKey);
   const [saving, setSaving] = useState(false);
+  const [classificationForm, setClassificationForm] = useState<ClassificationFormState>(() =>
+    classificationToFormState({
+      line: "unknown",
+      experiment: "unknown",
+      run_index: null,
+      display_label: "unknown · unknown",
+    }),
+  );
+  const [overlayRunId, setOverlayRunId] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -60,6 +80,9 @@ export function EditRunPage() {
         setAppRating(human.app_rating !== null ? String(human.app_rating) : "");
         setAppComment(human.app_comment);
         setRunComment(human.run_comment);
+        setClassificationForm(classificationToFormState(effectiveClassification(run)));
+        const runId = run.data.export?.meta?.run_id || run.data.run_id;
+        setOverlayRunId(hasClassificationOverlay(runId) ? runId ?? null : null);
         if (run.data.export) {
           setPaste(JSON.stringify(run.data.export, null, 2));
         }
@@ -107,7 +130,7 @@ export function EditRunPage() {
     setSaving(true);
     try {
       setStoredAccessKey(accessKey.trim());
-      const data = patchRunExportAndHuman(
+      const data = patchRunExportHumanAndClassification(
         storedRun,
         exportResult,
         {
@@ -115,6 +138,7 @@ export function EditRunPage() {
           app_comment: appComment.trim(),
           run_comment: runComment.trim(),
         },
+        formStateToClassification(classificationForm),
       );
       await updateRun({
         id,
@@ -164,6 +188,13 @@ export function EditRunPage() {
               ))}
             </select>
           </div>
+
+          <ClassificationFields
+            value={classificationForm}
+            onChange={setClassificationForm}
+            overlayRunId={overlayRunId}
+            idPrefix="edit-cls"
+          />
 
           <div className="field">
             <label htmlFor="paste">Run export JSON</label>
