@@ -1,5 +1,7 @@
 import { Link } from "react-router-dom";
+import { ExperimentTrajectoryCharts } from "./ExperimentTrajectoryCharts";
 import type { ExperimentStudy } from "../types/experiment";
+import type { HackathonRunRecord } from "../types/runExport";
 import {
   studyById,
   studyHeadline,
@@ -9,10 +11,11 @@ import {
 
 type Props = {
   study: ExperimentStudy;
+  runs: HackathonRunRecord[];
   compact?: boolean;
 };
 
-export function ExperimentStudyCard({ study, compact = false }: Props) {
+export function ExperimentStudyCard({ study, runs, compact = false }: Props) {
   const runsHref = `/?study=${study.id}`;
 
   return (
@@ -44,6 +47,8 @@ export function ExperimentStudyCard({ study, compact = false }: Props) {
           <dd>{study.result}</dd>
         </div>
       </dl>
+
+      {!compact && <ExperimentTrajectoryCharts study={study} runs={runs} />}
 
       {(study.buildsOn || study.cohortPreset) && (
         <p className="muted experiment-links" style={{ marginBottom: 0 }}>

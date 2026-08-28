@@ -743,6 +743,47 @@ a.chip.active {
   margin-top: 0.75rem;
 }
 
+.experiment-trajectory {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--line);
+}
+
+.experiment-trajectory-meta {
+  margin: 0;
+  font-size: 0.85rem;
+}
+
+.experiment-trajectory-empty {
+  margin: 1rem 0 0;
+  font-size: 0.88rem;
+}
+
+.experiment-trajectory-grid {
+  display: grid;
+  gap: 1rem;
+}
+
+@media (min-width: 900px) {
+  .experiment-trajectory-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.experiment-trajectory-chart h4 {
+  margin: 0 0 0.25rem;
+  font-size: 0.95rem;
+}
+
+.experiment-trajectory-chart .chart-hint {
+  margin: 0 0 0.5rem;
+  font-size: 0.8rem;
+}
+
+.experiment-trajectory-chart .chart-box {
+  min-height: 220px;
+}
+
 .detail-badges {
   display: flex;
   flex-wrap: wrap;
