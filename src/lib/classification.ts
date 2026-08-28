@@ -209,23 +209,23 @@ export function deriveFlags(
 }
 
 export function effectiveClassification(run: HackathonRunRecord): RunClassification {
-  if (run.data.classification?.display_label) {
-    return run.data.classification;
-  }
   const runId = run.data.export?.meta?.run_id || run.data.run_id;
   if (runId && manifestRuns?.[runId]?.classification) {
     return manifestRuns[runId]!.classification!;
+  }
+  if (run.data.classification?.display_label) {
+    return run.data.classification;
   }
   return deriveClassification(run);
 }
 
 export function effectiveFlags(run: HackathonRunRecord): RunFlags {
-  if (run.data.flags) {
-    return run.data.flags;
-  }
   const runId = run.data.export?.meta?.run_id || run.data.run_id;
   if (runId && manifestRuns?.[runId]?.flags) {
     return manifestRuns[runId]!.flags!;
+  }
+  if (run.data.flags) {
+    return run.data.flags;
   }
   const cls = effectiveClassification(run);
   return deriveFlags(

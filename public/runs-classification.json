@@ -1,6 +1,6 @@
 {
   "schema": "agentcofounder.runs_classification.v1",
-  "generated_at": "2026-08-23T14:43:39.142920Z",
+  "generated_at": "2026-08-28T10:48:54.266312Z",
   "description": "Canonical method labels for hackathon runs UI backfill. Overlay by run_id on ingest; wins over derived meta.approach.",
   "taxonomy": {
     "line": [
@@ -2208,6 +2208,276 @@
         "harness_status": "success",
         "weighted_total": 60351,
         "model_calls": 17
+      }
+    },
+    "2026-08-28T09-33-43-406Z": {
+      "classification": {
+        "line": "F",
+        "experiment": "exp5b-storage-control",
+        "run_index": 1,
+        "display_label": "F \u00b7 exp5b storage control \u00b7 run 1 \u00b7 r2",
+        "legacy_approach": "storage-control-r2-1"
+      },
+      "human": {
+        "app_rating": null,
+        "run_comment": null
+      },
+      "flags": {
+        "exclude_from_ranking": false,
+        "hide_early_smoke": false,
+        "include_in_efficiency_compare": true
+      },
+      "source": {
+        "git_branch": "setup/measure",
+        "git_commit": "ac8f9b01cdf4b76f36217d7d63ec9a1ce601c1f5",
+        "provider": "zai",
+        "model": "glm-5.2",
+        "harness_status": "success",
+        "weighted_total": 75559,
+        "model_calls": 17
+      }
+    },
+    "2026-08-28T09-37-23-903Z": {
+      "classification": {
+        "line": "F",
+        "experiment": "exp5b-storage-treatment",
+        "run_index": 1,
+        "display_label": "F \u00b7 exp5b storage treatment \u00b7 run 1 \u00b7 r2",
+        "legacy_approach": "storage-treatment-r2-1"
+      },
+      "human": {
+        "app_rating": null,
+        "run_comment": null
+      },
+      "flags": {
+        "exclude_from_ranking": false,
+        "hide_early_smoke": false,
+        "include_in_efficiency_compare": true
+      },
+      "source": {
+        "git_branch": "setup/measure",
+        "git_commit": "ac8f9b01cdf4b76f36217d7d63ec9a1ce601c1f5",
+        "provider": "zai",
+        "model": "glm-5.2",
+        "harness_status": "success",
+        "weighted_total": 113592,
+        "model_calls": 25
+      }
+    },
+    "2026-08-28T09-43-19-153Z": {
+      "classification": {
+        "line": "F",
+        "experiment": "exp5b-storage-treatment",
+        "run_index": 2,
+        "display_label": "F \u00b7 exp5b storage treatment \u00b7 run 2 \u00b7 r2",
+        "legacy_approach": "storage-treatment-r2-2"
+      },
+      "human": {
+        "app_rating": null,
+        "run_comment": null
+      },
+      "flags": {
+        "exclude_from_ranking": false,
+        "hide_early_smoke": false,
+        "include_in_efficiency_compare": true
+      },
+      "source": {
+        "git_branch": "setup/measure",
+        "git_commit": "ac8f9b01cdf4b76f36217d7d63ec9a1ce601c1f5",
+        "provider": "zai",
+        "model": "glm-5.2",
+        "harness_status": "success",
+        "weighted_total": 119922,
+        "model_calls": 24
+      }
+    },
+    "2026-08-28T09-48-38-359Z": {
+      "classification": {
+        "line": "F",
+        "experiment": "exp5b-storage-control",
+        "run_index": 2,
+        "display_label": "F \u00b7 exp5b storage control \u00b7 run 2 \u00b7 r2",
+        "legacy_approach": "storage-control-r2-2"
+      },
+      "human": {
+        "app_rating": null,
+        "run_comment": null
+      },
+      "flags": {
+        "exclude_from_ranking": false,
+        "hide_early_smoke": false,
+        "include_in_efficiency_compare": true
+      },
+      "source": {
+        "git_branch": "setup/measure",
+        "git_commit": "ac8f9b01cdf4b76f36217d7d63ec9a1ce601c1f5",
+        "provider": "zai",
+        "model": "glm-5.2",
+        "harness_status": "success",
+        "weighted_total": 139671,
+        "model_calls": 33
+      }
+    },
+    "2026-08-28T09-55-30-683Z": {
+      "classification": {
+        "line": "F",
+        "experiment": "exp5b-storage-control",
+        "run_index": 3,
+        "display_label": "F \u00b7 exp5b storage control \u00b7 run 3 \u00b7 r2",
+        "legacy_approach": "storage-control-r2-3"
+      },
+      "human": {
+        "app_rating": null,
+        "run_comment": null
+      },
+      "flags": {
+        "exclude_from_ranking": false,
+        "hide_early_smoke": false,
+        "include_in_efficiency_compare": true
+      },
+      "source": {
+        "git_branch": "setup/measure",
+        "git_commit": "ac8f9b01cdf4b76f36217d7d63ec9a1ce601c1f5",
+        "provider": "zai",
+        "model": "glm-5.2",
+        "harness_status": "success",
+        "weighted_total": 77572,
+        "model_calls": 18
+      }
+    },
+    "2026-08-28T09-59-12-356Z": {
+      "classification": {
+        "line": "F",
+        "experiment": "exp5b-storage-treatment",
+        "run_index": 3,
+        "display_label": "F \u00b7 exp5b storage treatment \u00b7 run 3 \u00b7 r2",
+        "legacy_approach": "storage-treatment-r2-3"
+      },
+      "human": {
+        "app_rating": null,
+        "run_comment": null
+      },
+      "flags": {
+        "exclude_from_ranking": false,
+        "hide_early_smoke": false,
+        "include_in_efficiency_compare": true
+      },
+      "source": {
+        "git_branch": "setup/measure",
+        "git_commit": "ac8f9b01cdf4b76f36217d7d63ec9a1ce601c1f5",
+        "provider": "zai",
+        "model": "glm-5.2",
+        "harness_status": "success",
+        "weighted_total": 92095,
+        "model_calls": 22
+      }
+    },
+    "2026-08-28T10-02-55-117Z": {
+      "classification": {
+        "line": "F",
+        "experiment": "exp5b-storage-treatment",
+        "run_index": 4,
+        "display_label": "F \u00b7 exp5b storage treatment \u00b7 run 4 \u00b7 r2",
+        "legacy_approach": "storage-treatment-r2-4"
+      },
+      "human": {
+        "app_rating": null,
+        "run_comment": null
+      },
+      "flags": {
+        "exclude_from_ranking": false,
+        "hide_early_smoke": false,
+        "include_in_efficiency_compare": true
+      },
+      "source": {
+        "git_branch": "setup/measure",
+        "git_commit": "ac8f9b01cdf4b76f36217d7d63ec9a1ce601c1f5",
+        "provider": "zai",
+        "model": "glm-5.2",
+        "harness_status": "success",
+        "weighted_total": 140362,
+        "model_calls": 27
+      }
+    },
+    "2026-08-28T10-10-00-893Z": {
+      "classification": {
+        "line": "F",
+        "experiment": "exp5b-storage-control",
+        "run_index": 4,
+        "display_label": "F \u00b7 exp5b storage control \u00b7 run 4 \u00b7 r2",
+        "legacy_approach": "storage-control-r2-4"
+      },
+      "human": {
+        "app_rating": null,
+        "run_comment": null
+      },
+      "flags": {
+        "exclude_from_ranking": false,
+        "hide_early_smoke": false,
+        "include_in_efficiency_compare": true
+      },
+      "source": {
+        "git_branch": "setup/measure",
+        "git_commit": "ac8f9b01cdf4b76f36217d7d63ec9a1ce601c1f5",
+        "provider": "zai",
+        "model": "glm-5.2",
+        "harness_status": "success",
+        "weighted_total": 186557,
+        "model_calls": 36
+      }
+    },
+    "2026-08-28T10-16-21-151Z": {
+      "classification": {
+        "line": "F",
+        "experiment": "exp5b-storage-control",
+        "run_index": 5,
+        "display_label": "F \u00b7 exp5b storage control \u00b7 run 5 \u00b7 r2",
+        "legacy_approach": "storage-control-r2-5"
+      },
+      "human": {
+        "app_rating": null,
+        "run_comment": null
+      },
+      "flags": {
+        "exclude_from_ranking": false,
+        "hide_early_smoke": false,
+        "include_in_efficiency_compare": true
+      },
+      "source": {
+        "git_branch": "setup/measure",
+        "git_commit": "ac8f9b01cdf4b76f36217d7d63ec9a1ce601c1f5",
+        "provider": "zai",
+        "model": "glm-5.2",
+        "harness_status": "success",
+        "weighted_total": 113583,
+        "model_calls": 27
+      }
+    },
+    "2026-08-28T10-21-11-512Z": {
+      "classification": {
+        "line": "F",
+        "experiment": "exp5b-storage-treatment",
+        "run_index": 5,
+        "display_label": "F \u00b7 exp5b storage treatment \u00b7 run 5 \u00b7 r2",
+        "legacy_approach": "storage-treatment-r2-5"
+      },
+      "human": {
+        "app_rating": null,
+        "run_comment": null
+      },
+      "flags": {
+        "exclude_from_ranking": false,
+        "hide_early_smoke": false,
+        "include_in_efficiency_compare": true
+      },
+      "source": {
+        "git_branch": "setup/measure",
+        "git_commit": "ac8f9b01cdf4b76f36217d7d63ec9a1ce601c1f5",
+        "provider": "zai",
+        "model": "glm-5.2",
+        "harness_status": "success",
+        "weighted_total": 101105,
+        "model_calls": 23
       }
     }
   }
