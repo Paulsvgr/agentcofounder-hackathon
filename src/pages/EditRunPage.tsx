@@ -1,17 +1,23 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import {
+  createExperiment,
   fetchPeople,
   getRun,
   getStoredAccessKey,
+  listRuns,
   setStoredAccessKey,
   updateRun,
 } from "../lib/api";
 import { ClassificationFields } from "../components/ClassificationFields";
 import {
+  applyRemoteTaxonomy,
+  collectExperimentSlugsFromRuns,
+  collectLineSlugsFromRuns,
   effectiveClassification,
   hasClassificationOverlay,
-  loadClassificationManifest,
+  loadHackathonTaxonomy,
+  mergeTaxonomyOptions,
   methodLabel,
 } from "../lib/classification";
 import {
@@ -48,6 +54,8 @@ export function EditRunPage() {
     }),
   );
   const [overlayRunId, setOverlayRunId] = useState<string | null>(null);
+  const [lineOptions, setLineOptions] = useState<string[]>([]);
+  const [experimentOptions, setExperimentOptions] = useState<string[]>([]);
 
   useEffect(() => {
     let cancelled = false;
@@ -71,9 +79,13 @@ export function EditRunPage() {
       setLoading(true);
       setError(null);
       try {
-        await loadClassificationManifest();
-        const run = await getRun(id);
+        await loadHackathonTaxonomy();
+        const [run, allRuns] = await Promise.all([getRun(id), listRuns().catch(() => [])]);
         if (cancelled) return;
+        setLineOptions(mergeTaxonomyOptions("line", collectLineSlugsFromRuns(allRuns)));
+        setExperimentOptions(
+          mergeTaxonomyOptions("experiment", collectExperimentSlugsFromRuns(allRuns)),
+        );
         setStoredRun(run);
         setAuthor(run.person);
         const human = humanFromRun(run);
@@ -192,7 +204,17 @@ export function EditRunPage() {
           <ClassificationFields
             value={classificationForm}
             onChange={setClassificationForm}
+            lines={lineOptions}
+            experiments={experimentOptions}
             overlayRunId={overlayRunId}
+            accessKey={accessKey}
+            onCreateExperiment={async (input) => {
+              const result = await createExperiment(input);
+              applyRemoteTaxonomy(result.taxonomy, result.experiments);
+              setExperimentOptions(result.taxonomy.experiment);
+              return result.experiment;
+            }}
+            onExperimentsChanged={setExperimentOptions}
             idPrefix="edit-cls"
           />
 

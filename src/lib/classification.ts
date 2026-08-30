@@ -4,9 +4,20 @@ import type {
   RunFlags,
   RunHuman,
 } from "../types/runExport";
+import { fetchTaxonomy } from "./api";
 
-const LINES = ["A", "A-prime", "B-prime", "C", "C-prime", "D", "F", "unknown"] as const;
-const EXPERIMENTS = [
+export const DEFAULT_LINES = [
+  "A",
+  "A-prime",
+  "B-prime",
+  "C",
+  "C-prime",
+  "D",
+  "F",
+  "unknown",
+] as const;
+
+export const DEFAULT_EXPERIMENTS = [
   "baseline",
   "no-dev-server-prompt",
   "auto-test",
@@ -34,7 +45,117 @@ const EXPERIMENTS = [
   "unknown",
 ] as const;
 
-export { LINES, EXPERIMENTS };
+/** @deprecated Use getLineTaxonomy() — loaded from runs-classification.json taxonomy. */
+export const LINES = DEFAULT_LINES;
+/** @deprecated Use getExperimentTaxonomy() — loaded from runs-classification.json taxonomy. */
+export const EXPERIMENTS = DEFAULT_EXPERIMENTS;
+
+type ClassificationTaxonomy = {
+  line: string[];
+  experiment: string[];
+};
+
+type ClassificationManifestBody = {
+  runs?: Record<string, ClassificationOverlayEntry>;
+  taxonomy?: Partial<ClassificationTaxonomy>;
+};
+
+let classificationTaxonomy: ClassificationTaxonomy = {
+  line: [...DEFAULT_LINES],
+  experiment: [...DEFAULT_EXPERIMENTS],
+};
+
+let experimentTitles: Record<string, string> = {};
+
+export function getExperimentTitle(slug: string): string {
+  return experimentTitles[slug] ?? slug.replace(/-/g, " ");
+}
+
+export function applyRemoteTaxonomy(
+  taxonomy: ClassificationTaxonomy,
+  experiments: Array<{ slug: string; title: string }>,
+): void {
+  if (taxonomy.line.length) {
+    classificationTaxonomy = {
+      ...classificationTaxonomy,
+      line: [...taxonomy.line],
+      experiment: taxonomy.experiment.length
+        ? [...taxonomy.experiment]
+        : classificationTaxonomy.experiment,
+    };
+  } else if (taxonomy.experiment.length) {
+    classificationTaxonomy = {
+      ...classificationTaxonomy,
+      experiment: [...taxonomy.experiment],
+    };
+  }
+  for (const exp of experiments) {
+    if (exp.slug) experimentTitles[exp.slug] = exp.title || getExperimentTitle(exp.slug);
+  }
+}
+
+export async function loadRemoteTaxonomy(): Promise<void> {
+  try {
+    const data = await fetchTaxonomy();
+    applyRemoteTaxonomy(data.taxonomy, data.experiments);
+  } catch {
+    /* static taxonomy from runs-classification.json remains */
+  }
+}
+
+export async function loadHackathonTaxonomy(): Promise<
+  Record<string, ClassificationOverlayEntry>
+> {
+  const overlay = await loadClassificationManifest();
+  await loadRemoteTaxonomy();
+  return overlay;
+}
+
+export function getLineTaxonomy(): readonly string[] {
+  return classificationTaxonomy.line;
+}
+
+export function getExperimentTaxonomy(): readonly string[] {
+  return classificationTaxonomy.experiment;
+}
+
+export function mergeTaxonomyOptions(
+  kind: keyof ClassificationTaxonomy,
+  ...extra: Iterable<string>[]
+): string[] {
+  const set = new Set(classificationTaxonomy[kind]);
+  for (const values of extra) {
+    for (const value of values) {
+      const trimmed = value?.trim();
+      if (trimmed) set.add(trimmed);
+    }
+  }
+  return [...set].sort((a, b) => a.localeCompare(b));
+}
+
+export function collectExperimentSlugsFromRuns(runs: HackathonRunRecord[]): string[] {
+  const slugs = new Set<string>();
+  for (const run of runs) {
+    slugs.add(experimentKey(run));
+    const stored = run.data.classification?.experiment;
+    if (stored) slugs.add(stored);
+    const meta = run.data.export?.meta?.classification?.experiment;
+    if (meta) slugs.add(meta);
+  }
+  return [...slugs];
+}
+
+export function collectLineSlugsFromRuns(runs: HackathonRunRecord[]): string[] {
+  const slugs = new Set<string>();
+  for (const run of runs) {
+    slugs.add(lineKey(run));
+    const stored = run.data.classification?.line;
+    if (stored) slugs.add(stored);
+    const meta = run.data.export?.meta?.classification?.line;
+    if (meta) slugs.add(meta);
+  }
+  return [...slugs];
+}
 
 type ClassificationOverlayEntry = {
   classification?: RunClassification;
@@ -53,8 +174,16 @@ export async function loadClassificationManifest(): Promise<
   if (!classificationOverlayPromise) {
     classificationOverlayPromise = fetch("/runs-classification.json")
       .then((r) => (r.ok ? r.json() : { runs: {} }))
-      .then((body) => {
-        classificationOverlay = (body?.runs as Record<string, ClassificationOverlayEntry>) || {};
+      .then((body: ClassificationManifestBody) => {
+        if (body?.taxonomy?.line?.length) {
+          classificationTaxonomy = {
+            line: [...body.taxonomy.line],
+            experiment: body.taxonomy.experiment?.length
+              ? [...body.taxonomy.experiment]
+              : [...DEFAULT_EXPERIMENTS],
+          };
+        }
+        classificationOverlay = body?.runs ?? {};
         return classificationOverlay;
       })
       .catch(() => {

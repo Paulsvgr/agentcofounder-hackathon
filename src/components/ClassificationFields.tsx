@@ -1,22 +1,82 @@
-import { EXPERIMENTS, LINES } from "../lib/classification";
+import { useEffect, useMemo, useState } from "react";
+import { getExperimentTitle, getExperimentTaxonomy, getLineTaxonomy } from "../lib/classification";
 import {
   applyClassificationFieldPatch,
   type ClassificationFormState,
 } from "../lib/classificationForm";
 
+const ADD_NEW_EXPERIMENT = "__new__";
+const EXPERIMENT_ID_PATTERN = /^[a-z0-9][a-z0-9-]{0,79}$/;
+
 type Props = {
   value: ClassificationFormState;
   onChange: (next: ClassificationFormState) => void;
+  lines?: string[];
+  experiments?: string[];
   overlayRunId?: string | null;
   idPrefix?: string;
+  accessKey?: string;
+  onCreateExperiment?: (input: {
+    id: string;
+    title: string;
+    accessKey: string;
+  }) => Promise<{ slug: string; title: string }>;
+  onExperimentsChanged?: (experiments: string[]) => void;
 };
+
+function sortedUnique(values: Iterable<string>, current: string): string[] {
+  const set = new Set(values);
+  if (current.trim()) set.add(current.trim());
+  return [...set].sort((a, b) => a.localeCompare(b));
+}
+
+function titleFromSlug(slug: string): string {
+  return slug
+    .split("-")
+    .filter(Boolean)
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(" ");
+}
 
 export function ClassificationFields({
   value,
   onChange,
+  lines,
+  experiments,
   overlayRunId,
   idPrefix = "cls",
+  accessKey,
+  onCreateExperiment,
+  onExperimentsChanged,
 }: Props) {
+  const lineOptions = useMemo(
+    () => sortedUnique(lines ?? getLineTaxonomy(), value.line),
+    [lines, value.line],
+  );
+  const experimentOptions = useMemo(
+    () => sortedUnique(experiments ?? getExperimentTaxonomy(), value.experiment),
+    [experiments, value.experiment],
+  );
+
+  const [experimentSelect, setExperimentSelect] = useState(() =>
+    experimentOptions.includes(value.experiment) ? value.experiment : ADD_NEW_EXPERIMENT,
+  );
+  const [newExperimentId, setNewExperimentId] = useState("");
+  const [newExperimentTitle, setNewExperimentTitle] = useState("");
+  const [createError, setCreateError] = useState<string | null>(null);
+  const [creating, setCreating] = useState(false);
+
+  useEffect(() => {
+    if (experimentOptions.includes(value.experiment)) {
+      setExperimentSelect(value.experiment);
+      return;
+    }
+    if (value.experiment && value.experiment !== "unknown") {
+      setExperimentSelect(ADD_NEW_EXPERIMENT);
+      setNewExperimentId(value.experiment);
+    }
+  }, [value.experiment, experimentOptions]);
+
   function setField(patch: Partial<ClassificationFormState>) {
     onChange({ ...value, ...patch });
   }
@@ -25,6 +85,48 @@ export function ClassificationFields({
     patch: Partial<Pick<ClassificationFormState, "line" | "experiment" | "runIndex">>,
   ) {
     onChange(applyClassificationFieldPatch(value, patch));
+  }
+
+  function onExperimentSelectChange(next: string) {
+    setExperimentSelect(next);
+    setCreateError(null);
+    if (next === ADD_NEW_EXPERIMENT) return;
+    setStructural({ experiment: next });
+  }
+
+  async function onAddExperiment() {
+    if (!onCreateExperiment) {
+      setCreateError("Experiment creation is not configured.");
+      return;
+    }
+    const id = newExperimentId.trim().toLowerCase();
+    if (!EXPERIMENT_ID_PATTERN.test(id)) {
+      setCreateError("Use lowercase letters, numbers, and hyphens (e.g. exp7-planner-treatment).");
+      return;
+    }
+    if (!accessKey?.trim()) {
+      setCreateError("Enter the shared hackathon access key to add experiments.");
+      return;
+    }
+    setCreating(true);
+    setCreateError(null);
+    try {
+      const title = newExperimentTitle.trim() || titleFromSlug(id);
+      const created = await onCreateExperiment({
+        id,
+        title,
+        accessKey: accessKey.trim(),
+      });
+      onExperimentsChanged?.(sortedUnique(experimentOptions, created.slug));
+      setExperimentSelect(created.slug);
+      setNewExperimentId("");
+      setNewExperimentTitle("");
+      setStructural({ experiment: created.slug });
+    } catch (err) {
+      setCreateError(err instanceof Error ? err.message : "Could not add experiment.");
+    } finally {
+      setCreating(false);
+    }
   }
 
   return (
@@ -45,11 +147,9 @@ export function ClassificationFields({
           <select
             id={`${idPrefix}-line`}
             value={value.line}
-            onChange={(e) =>
-              setStructural({ line: e.target.value as ClassificationFormState["line"] })
-            }
+            onChange={(e) => setStructural({ line: e.target.value })}
           >
-            {LINES.map((line) => (
+            {lineOptions.map((line) => (
               <option key={line} value={line}>
                 {line}
               </option>
@@ -60,18 +160,15 @@ export function ClassificationFields({
           <label htmlFor={`${idPrefix}-experiment`}>Experiment</label>
           <select
             id={`${idPrefix}-experiment`}
-            value={value.experiment}
-            onChange={(e) =>
-              setStructural({
-                experiment: e.target.value as ClassificationFormState["experiment"],
-              })
-            }
+            value={experimentSelect}
+            onChange={(e) => onExperimentSelectChange(e.target.value)}
           >
-            {EXPERIMENTS.map((experiment) => (
+            {experimentOptions.map((experiment) => (
               <option key={experiment} value={experiment}>
-                {experiment}
+                {getExperimentTitle(experiment)} ({experiment})
               </option>
             ))}
+            {onCreateExperiment ? <option value={ADD_NEW_EXPERIMENT}>Add new…</option> : null}
           </select>
         </div>
         <div className="field">
@@ -87,6 +184,43 @@ export function ClassificationFields({
           />
         </div>
       </div>
+
+      {experimentSelect === ADD_NEW_EXPERIMENT && onCreateExperiment ? (
+        <div className="stack" style={{ gap: "0.75rem" }}>
+          <div className="row">
+            <div className="field">
+              <label htmlFor={`${idPrefix}-newExperimentId`}>New experiment id</label>
+              <input
+                id={`${idPrefix}-newExperimentId`}
+                value={newExperimentId}
+                onChange={(e) => setNewExperimentId(e.target.value.toLowerCase())}
+                placeholder="exp7-planner-treatment"
+                spellCheck={false}
+              />
+            </div>
+            <div className="field">
+              <label htmlFor={`${idPrefix}-newExperimentTitle`}>Title</label>
+              <input
+                id={`${idPrefix}-newExperimentTitle`}
+                value={newExperimentTitle}
+                onChange={(e) => setNewExperimentTitle(e.target.value)}
+                placeholder="Human-readable name"
+              />
+            </div>
+          </div>
+          <div className="row">
+            <button
+              type="button"
+              className="btn btn-sm"
+              onClick={() => void onAddExperiment()}
+              disabled={creating || !newExperimentId.trim()}
+            >
+              {creating ? "Adding…" : "Add experiment"}
+            </button>
+          </div>
+          {createError ? <div className="alert alert-error">{createError}</div> : null}
+        </div>
+      ) : null}
 
       <div className="field">
         <label htmlFor={`${idPrefix}-displayLabel`}>Display label</label>

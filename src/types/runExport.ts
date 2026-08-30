@@ -55,34 +55,11 @@ export type ActionSegment = {
   note: string | null;
 };
 
-export type ClassificationLine = "A" | "A-prime" | "B-prime" | "C" | "C-prime" | "D" | "F" | "unknown";
+/** Line slug — see runs-classification.json taxonomy (not a closed union). */
+export type ClassificationLine = string;
 
-export type ClassificationExperiment =
-  | "baseline"
-  | "no-dev-server-prompt"
-  | "auto-test"
-  | "autoverify-off"
-  | "autoverify-supplement"
-  | "autoverify-owned"
-  | "autoverify-gated"
-  | "prime-comparison"
-  | "exp1-rtl-control"
-  | "exp1-rtl-cleanup"
-  | "exp2-stop-control"
-  | "exp2-stop-treatment"
-  | "exp3-test-control"
-  | "exp3-test-treatment"
-  | "exp4-digest-control"
-  | "exp4-digest-treatment"
-  | "exp5-template-control"
-  | "exp5-template-treatment"
-  | "exp6-reporter-control"
-  | "exp6-reporter-treatment"
-  | "exp5b-storage-control"
-  | "exp5b-storage-treatment"
-  | "legacy"
-  | "legacy-smoke"
-  | "unknown";
+/** Experiment slug — see runs-classification.json taxonomy (not a closed union). */
+export type ClassificationExperiment = string;
 
 export type RunClassification = {
   line: ClassificationLine;

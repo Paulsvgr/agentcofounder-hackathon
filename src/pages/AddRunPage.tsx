@@ -3,9 +3,18 @@ import { Link, useNavigate } from "react-router-dom";
 import { HowToExportPanel } from "../components/HowToExportPanel";
 import { ClassificationFields } from "../components/ClassificationFields";
 import {
+  collectExperimentSlugsFromRuns,
+  collectLineSlugsFromRuns,
+  applyRemoteTaxonomy,
+  loadHackathonTaxonomy,
+  mergeTaxonomyOptions,
+} from "../lib/classification";
+import {
+  createExperiment,
   createRunFromPaste,
   fetchPeople,
   getStoredAccessKey,
+  listRuns,
   setStoredAccessKey,
 } from "../lib/api";
 import {
@@ -79,6 +88,28 @@ export function AddRunPage() {
     }),
   );
   const [classificationTouched, setClassificationTouched] = useState(false);
+  const [lineOptions, setLineOptions] = useState<string[]>([]);
+  const [experimentOptions, setExperimentOptions] = useState<string[]>([]);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        await loadHackathonTaxonomy();
+        const runs = await listRuns().catch(() => []);
+        if (cancelled) return;
+        setLineOptions(mergeTaxonomyOptions("line", collectLineSlugsFromRuns(runs)));
+        setExperimentOptions(
+          mergeTaxonomyOptions("experiment", collectExperimentSlugsFromRuns(runs)),
+        );
+      } catch {
+        /* taxonomy fallbacks apply in ClassificationFields */
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   function syncClassificationFromExport(exportDoc: RunExport) {
     if (classificationTouched) return;
@@ -371,6 +402,16 @@ export function AddRunPage() {
                   setClassificationTouched(true);
                   setClassificationForm(next);
                 }}
+                lines={lineOptions}
+                experiments={experimentOptions}
+                accessKey={accessKey}
+                onCreateExperiment={async (input) => {
+                  const result = await createExperiment(input);
+                  applyRemoteTaxonomy(result.taxonomy, result.experiments);
+                  setExperimentOptions(result.taxonomy.experiment);
+                  return result.experiment;
+                }}
+                onExperimentsChanged={setExperimentOptions}
                 idPrefix="add-cls"
               />
 

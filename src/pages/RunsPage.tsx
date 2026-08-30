@@ -5,11 +5,14 @@ import { ExperimentStudyPanel } from "../components/ExperimentStudyPanel";
 import { RunActionModal } from "../components/RunActionModal";
 import { TokenStatsPanel } from "../components/TokenStats";
 import {
+  collectExperimentSlugsFromRuns,
+  collectLineSlugsFromRuns,
   effectiveHuman,
   experimentKey,
   includeInEfficiencyCompare,
   lineKey,
-  loadClassificationManifest,
+  loadHackathonTaxonomy,
+  mergeTaxonomyOptions,
   methodLabel,
   methodTooltip,
   shouldHideEarlySmoke,
@@ -76,7 +79,7 @@ export function RunsPage() {
       setLoading(true);
       setError(null);
       try {
-        await loadClassificationManifest();
+        await loadHackathonTaxonomy();
         if (!cancelled) setManifestReady(true);
         const [data, people] = await Promise.all([listRuns(), fetchPeople()]);
         if (!cancelled) {
@@ -190,16 +193,12 @@ export function RunsPage() {
 
   const lineOptions = useMemo(() => {
     if (!manifestReady) return [];
-    const set = new Set<string>();
-    for (const r of runs) set.add(lineKey(r));
-    return [...set].sort();
+    return mergeTaxonomyOptions("line", collectLineSlugsFromRuns(runs));
   }, [runs, manifestReady]);
 
   const experimentOptions = useMemo(() => {
     if (!manifestReady) return [];
-    const set = new Set<string>();
-    for (const r of runs) set.add(experimentKey(r));
-    return [...set].sort();
+    return mergeTaxonomyOptions("experiment", collectExperimentSlugsFromRuns(runs));
   }, [runs, manifestReady]);
 
   const authorOptions = useMemo(() => {

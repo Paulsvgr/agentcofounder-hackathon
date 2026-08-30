@@ -100,6 +100,27 @@ export async function fetchPeople(): Promise<string[]> {
   return data.people;
 }
 
+export type TaxonomyResponse = {
+  taxonomy: { line: string[]; experiment: string[] };
+  experiments: Array<{ slug: string; title: string }>;
+};
+
+export async function fetchTaxonomy(): Promise<TaxonomyResponse> {
+  return request<TaxonomyResponse>("/api/v1/taxonomy/");
+}
+
+export async function createExperiment(input: {
+  id: string;
+  title?: string;
+  accessKey: string;
+}): Promise<TaxonomyResponse & { experiment: { slug: string; title: string } }> {
+  return request("/api/v1/experiments/", {
+    method: "POST",
+    accessKey: input.accessKey,
+    body: JSON.stringify({ id: input.id, title: input.title || "" }),
+  });
+}
+
 export type ListRunsParams = {
   person?: string;
   branch?: string;
