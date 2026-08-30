@@ -2,7 +2,7 @@ import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import { Layout } from "./components/Layout";
 import { ThemeProvider } from "./lib/theme";
 import { AddRunPage } from "./pages/AddRunPage";
-import { CohortPage } from "./pages/CohortPage";
+import { ExperimentComparePage } from "./pages/ExperimentComparePage";
 import { EditRunPage } from "./pages/EditRunPage";
 import { ExperimentsPage } from "./pages/ExperimentsPage";
 import { FixRatingPage } from "./pages/FixRatingPage";
@@ -19,7 +19,8 @@ export default function App() {
             <Route index element={<RunsPage />} />
             <Route path="add" element={<AddRunPage />} />
             <Route path="how-to" element={<HowToPage />} />
-            <Route path="cohort" element={<CohortPage />} />
+            <Route path="compare" element={<ExperimentComparePage />} />
+            <Route path="cohort" element={<Navigate to="/compare" replace />} />
             <Route path="experiments" element={<ExperimentsPage />} />
             <Route path="runs/:id" element={<RunDetailPage />} />
             <Route path="runs/:id/rate" element={<FixRatingPage />} />

@@ -17,12 +17,20 @@ Run detail: **action-flow stacked bar** with rulers Time | Raw tokens | Weighted
 
 v1 runs show **legacy v1** badge and collapsed phase heuristic.
 
-## Cohort
+## Compare
 
-`/cohort` — preset switcher:
+`/compare` — preset switcher for curated run sets:
 
 - `study` (default) — 7-run baseline / autoverify / snowball set
 - `exp1-rtl` — Experiment 1 rtl-control vs rtl-cleanup (10 runs)
+
+Legacy `/cohort` redirects to `/compare`.
+
+## Manifest experiment id
+
+V2 manifests use `experiment.id` (not `cohort`). UI reads `id ?? cohort` for old runs.
+
+Env on harness: `RUN_EXPERIMENT`, `RUN_ARM`, `RUN_REP`, `RUN_INTERVENTION`.
 
 ## Publish to prod
 
@@ -58,5 +66,5 @@ Load from **Add run → Load v2 sample JSON**.
 | Action flow helpers | `src/lib/actionFlow.ts` |
 | Timing aliases | `src/lib/efficiencyFields.ts` |
 | Chart | `src/components/ActionFlowChart.tsx` |
-| Cohort compare | `src/pages/CohortPage.tsx` |
+| Cohort compare | `src/pages/ExperimentComparePage.tsx` |
 | Backend ingest | `webeditor/hackathon/normalize.py` |

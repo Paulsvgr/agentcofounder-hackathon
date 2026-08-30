@@ -39,13 +39,13 @@ export function ExperimentsPage() {
       <section className="panel">
         <h2>Experiments</h2>
         <p className="muted lead">
-          Line F stack on <code>setup/measure</code>: change, goal, result, and verdict per study.
+          V2 stack on <code>setup/measure</code>: change, goal, result, and verdict per study.
           Normalized cumulative curves and stage mix compare control vs treatment medians.
         </p>
         <p className="muted">
           Run-level arms link to the{" "}
-          <Link to="/">Runs</Link> filter and charts. Cohort views are curated run lists — see{" "}
-          <Link to="/cohort">Cohort</Link> for Exp1 RTL and the early 7-run study.
+          <Link to="/">Runs</Link> filter and charts. Curated compare views — see{" "}
+          <Link to="/compare">Compare</Link> for Exp1 RTL and the early 7-run study.
         </p>
         {loading && <p className="muted">Loading run trajectories…</p>}
         {error && <div className="alert alert-error">{error}</div>}

@@ -99,7 +99,7 @@ npm run publish:runs -- --exp1-rtl   # all Experiment 1 reps`}</pre>
         </div>
 
         <p style={{ margin: 0 }}>
-          Compare cohorts on <a href="/cohort">Cohort</a> (<code>?preset=exp1-rtl</code> for Experiment 1). Full
+          Compare runs on <a href="/compare">Compare</a> (<code>?preset=exp1-rtl</code> for Experiment 1). Full
           checklist:{" "}
           <a href="/steps.html" target="_blank" rel="noreferrer">
             steps.html

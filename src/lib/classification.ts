@@ -269,11 +269,11 @@ function experimentLabel(experiment: string): string {
 }
 
 export function buildDisplayLabel(
-  line: RunClassification["line"],
+  _line: RunClassification["line"],
   experiment: RunClassification["experiment"],
   runIndex: number | null,
 ): string {
-  const base = `${line} · ${experimentLabel(experiment)}`;
+  const base = experimentLabel(experiment);
   return runIndex !== null ? `${base} · run ${runIndex}` : base;
 }
 

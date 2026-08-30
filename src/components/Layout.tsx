@@ -26,10 +26,10 @@ export function Layout() {
                 Experiments
               </NavLink>
               <NavLink
-                to="/cohort"
+                to="/compare"
                 className={({ isActive }) => (isActive ? "active" : undefined)}
               >
-                Cohort
+                Compare
               </NavLink>
               <NavLink to="/add" className={({ isActive }) => (isActive ? "active" : undefined)}>
                 Add run

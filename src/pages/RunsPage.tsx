@@ -6,11 +6,9 @@ import { RunActionModal } from "../components/RunActionModal";
 import { TokenStatsPanel } from "../components/TokenStats";
 import {
   collectExperimentSlugsFromRuns,
-  collectLineSlugsFromRuns,
   effectiveHuman,
   experimentKey,
   includeInEfficiencyCompare,
-  lineKey,
   loadHackathonTaxonomy,
   mergeTaxonomyOptions,
   methodLabel,
@@ -23,6 +21,7 @@ import { fetchPeople, listRuns } from "../lib/api";
 import { shortRunId } from "../lib/actionFlow";
 import {
   manifestSearchHaystack,
+  resolveManifestExperimentId,
   runManifestOf,
   shortConfigHash,
   templateTreeHash,
@@ -57,7 +56,6 @@ export function RunsPage() {
   const [authors, setAuthors] = useState<string[]>([]);
 
   const [author, setAuthor] = useState("");
-  const [lines, setLines] = useState<string[]>([]);
   const [experiments, setExperiments] = useState<string[]>([]);
   const [branch, setBranch] = useState("");
   const [provider, setProvider] = useState("");
@@ -69,7 +67,7 @@ export function RunsPage() {
   const [manifestSearch, setManifestSearch] = useState("");
   const [configHash, setConfigHash] = useState("");
   const [templateId, setTemplateId] = useState("");
-  const [manifestCohort, setManifestCohort] = useState("");
+  const [manifestExperimentId, setManifestExperimentId] = useState("");
   const [manifestArm, setManifestArm] = useState("");
   const [actionRun, setActionRun] = useState<HackathonRunRecord | null>(null);
 
@@ -105,7 +103,6 @@ export function RunsPage() {
     const study = studyById(studyParam as ExperimentStudyId);
     if (!study) return;
     setExperiments([...study.arms]);
-    if (study.line) setLines([study.line]);
   }, [searchParams, manifestReady]);
 
   const matchedStudies = useMemo(
@@ -119,7 +116,6 @@ export function RunsPage() {
     const study = studyById(studyId);
     if (!study) return;
     setExperiments([...study.arms]);
-    if (study.line) setLines([study.line]);
     setSearchParams({ study: study.id });
   }
 
@@ -169,11 +165,11 @@ export function RunsPage() {
     return [...set].sort();
   }, [runs]);
 
-  const manifestCohortOptions = useMemo(() => {
+  const manifestExperimentIdOptions = useMemo(() => {
     const set = new Set<string>();
     for (const r of runs) {
-      const cohort = runManifestOf(r)?.experiment?.cohort;
-      if (cohort) set.add(cohort);
+      const experimentId = resolveManifestExperimentId(runManifestOf(r)?.experiment);
+      if (experimentId) set.add(experimentId);
     }
     return [...set].sort();
   }, [runs]);
@@ -190,11 +186,6 @@ export function RunsPage() {
   useEffect(() => {
     if (model && !models.includes(model)) setModel("");
   }, [model, models]);
-
-  const lineOptions = useMemo(() => {
-    if (!manifestReady) return [];
-    return mergeTaxonomyOptions("line", collectLineSlugsFromRuns(runs));
-  }, [runs, manifestReady]);
 
   const experimentOptions = useMemo(() => {
     if (!manifestReady) return [];
@@ -216,7 +207,6 @@ export function RunsPage() {
       list = list.filter((r) => !shouldHideEarlySmoke(r));
     }
     if (author) list = list.filter((r) => r.person === author);
-    if (lines.length) list = list.filter((r) => lines.includes(lineKey(r)));
     if (experiments.length) list = list.filter((r) => experiments.includes(experimentKey(r)));
     if (branch) {
       list = list.filter(
@@ -240,8 +230,10 @@ export function RunsPage() {
     if (templateId) {
       list = list.filter((r) => runManifestOf(r)?.template?.id === templateId);
     }
-    if (manifestCohort) {
-      list = list.filter((r) => runManifestOf(r)?.experiment?.cohort === manifestCohort);
+    if (manifestExperimentId) {
+      list = list.filter(
+        (r) => resolveManifestExperimentId(runManifestOf(r)?.experiment) === manifestExperimentId,
+      );
     }
     if (manifestArm) {
       list = list.filter((r) => runManifestOf(r)?.experiment?.arm === manifestArm);
@@ -273,7 +265,6 @@ export function RunsPage() {
   }, [
     runs,
     author,
-    lines,
     experiments,
     branch,
     provider,
@@ -284,7 +275,7 @@ export function RunsPage() {
     manifestReady,
     configHash,
     templateId,
-    manifestCohort,
+    manifestExperimentId,
     manifestArm,
     manifestSearch,
   ]);
@@ -301,8 +292,8 @@ export function RunsPage() {
       <section className="panel">
         <h2>Compare runs</h2>
         <p className="muted lead">
-          Filter by structured <strong>line</strong> and <strong>experiment</strong>, or by V2{" "}
-          <strong>manifest</strong> provenance (config hash, template, cohort/arm).
+          Filter by structured <strong>experiment</strong>, or by V2{" "}
+          <strong>manifest</strong> provenance (config hash, template, experiment id/arm).
         </p>
 
         <div className="filters row">
@@ -313,25 +304,6 @@ export function RunsPage() {
               {authorOptions.map((a) => (
                 <option key={a} value={a}>
                   {a}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div className="field field-multi">
-            <label htmlFor="f-line">Line</label>
-            <select
-              id="f-line"
-              multiple
-              size={4}
-              value={lines}
-              onChange={(e) => {
-                const selected = [...e.target.selectedOptions].map((o) => o.value);
-                setLines(selected);
-              }}
-            >
-              {lineOptions.map((l) => (
-                <option key={l} value={l}>
-                  {l}
                 </option>
               ))}
             </select>
@@ -433,7 +405,7 @@ export function RunsPage() {
             <input
               id="f-manifest-search"
               type="search"
-              placeholder="config hash, template, cohort, arm, model…"
+              placeholder="config hash, template, experiment id, arm, model…"
               value={manifestSearch}
               onChange={(e) => setManifestSearch(e.target.value)}
             />
@@ -469,16 +441,16 @@ export function RunsPage() {
             </select>
           </div>
           <div className="field">
-            <label htmlFor="f-manifest-cohort">Cohort</label>
+            <label htmlFor="f-manifest-experiment">Experiment (manifest)</label>
             <select
-              id="f-manifest-cohort"
-              value={manifestCohort}
-              onChange={(e) => setManifestCohort(e.target.value)}
+              id="f-manifest-experiment"
+              value={manifestExperimentId}
+              onChange={(e) => setManifestExperimentId(e.target.value)}
             >
               <option value="">All</option>
-              {manifestCohortOptions.map((c) => (
-                <option key={c} value={c}>
-                  {c}
+              {manifestExperimentIdOptions.map((id) => (
+                <option key={id} value={id}>
+                  {id}
                 </option>
               ))}
             </select>
@@ -500,24 +472,13 @@ export function RunsPage() {
           </div>
         </div>
 
-        {(lines.length > 0 ||
-          experiments.length > 0 ||
+        {(experiments.length > 0 ||
           configHash ||
           templateId ||
-          manifestCohort ||
+          manifestExperimentId ||
           manifestArm ||
           manifestSearch.trim()) && (
           <div className="chips filter-chips">
-            {lines.map((l) => (
-              <button
-                key={`line-${l}`}
-                type="button"
-                className="chip chip-btn"
-                onClick={() => setLines(toggleInList(lines, l))}
-              >
-                line: {l} ×
-              </button>
-            ))}
             {experiments.map((ex) => (
               <button
                 key={`exp-${ex}`}
@@ -538,13 +499,13 @@ export function RunsPage() {
                 template: {templateId} ×
               </button>
             )}
-            {manifestCohort && (
+            {manifestExperimentId && (
               <button
                 type="button"
                 className="chip chip-btn"
-                onClick={() => setManifestCohort("")}
+                onClick={() => setManifestExperimentId("")}
               >
-                cohort: {manifestCohort} ×
+                experiment: {manifestExperimentId} ×
               </button>
             )}
             {manifestArm && (

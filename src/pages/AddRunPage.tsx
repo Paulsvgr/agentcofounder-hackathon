@@ -4,7 +4,6 @@ import { HowToExportPanel } from "../components/HowToExportPanel";
 import { ClassificationFields } from "../components/ClassificationFields";
 import {
   collectExperimentSlugsFromRuns,
-  collectLineSlugsFromRuns,
   applyRemoteTaxonomy,
   loadHackathonTaxonomy,
   mergeTaxonomyOptions,
@@ -88,7 +87,6 @@ export function AddRunPage() {
     }),
   );
   const [classificationTouched, setClassificationTouched] = useState(false);
-  const [lineOptions, setLineOptions] = useState<string[]>([]);
   const [experimentOptions, setExperimentOptions] = useState<string[]>([]);
 
   useEffect(() => {
@@ -98,7 +96,6 @@ export function AddRunPage() {
         await loadHackathonTaxonomy();
         const runs = await listRuns().catch(() => []);
         if (cancelled) return;
-        setLineOptions(mergeTaxonomyOptions("line", collectLineSlugsFromRuns(runs)));
         setExperimentOptions(
           mergeTaxonomyOptions("experiment", collectExperimentSlugsFromRuns(runs)),
         );
@@ -402,7 +399,6 @@ export function AddRunPage() {
                   setClassificationTouched(true);
                   setClassificationForm(next);
                 }}
-                lines={lineOptions}
                 experiments={experimentOptions}
                 accessKey={accessKey}
                 onCreateExperiment={async (input) => {

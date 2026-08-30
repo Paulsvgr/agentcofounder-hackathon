@@ -13,7 +13,6 @@ import { ClassificationFields } from "../components/ClassificationFields";
 import {
   applyRemoteTaxonomy,
   collectExperimentSlugsFromRuns,
-  collectLineSlugsFromRuns,
   effectiveClassification,
   hasClassificationOverlay,
   loadHackathonTaxonomy,
@@ -54,7 +53,6 @@ export function EditRunPage() {
     }),
   );
   const [overlayRunId, setOverlayRunId] = useState<string | null>(null);
-  const [lineOptions, setLineOptions] = useState<string[]>([]);
   const [experimentOptions, setExperimentOptions] = useState<string[]>([]);
 
   useEffect(() => {
@@ -82,7 +80,6 @@ export function EditRunPage() {
         await loadHackathonTaxonomy();
         const [run, allRuns] = await Promise.all([getRun(id), listRuns().catch(() => [])]);
         if (cancelled) return;
-        setLineOptions(mergeTaxonomyOptions("line", collectLineSlugsFromRuns(allRuns)));
         setExperimentOptions(
           mergeTaxonomyOptions("experiment", collectExperimentSlugsFromRuns(allRuns)),
         );
@@ -204,7 +201,6 @@ export function EditRunPage() {
           <ClassificationFields
             value={classificationForm}
             onChange={setClassificationForm}
-            lines={lineOptions}
             experiments={experimentOptions}
             overlayRunId={overlayRunId}
             accessKey={accessKey}

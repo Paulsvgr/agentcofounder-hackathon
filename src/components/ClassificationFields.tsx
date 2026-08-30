@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { getExperimentTitle, getExperimentTaxonomy, getLineTaxonomy } from "../lib/classification";
+import { getExperimentTitle, getExperimentTaxonomy } from "../lib/classification";
 import {
   applyClassificationFieldPatch,
   type ClassificationFormState,
@@ -11,7 +11,6 @@ const EXPERIMENT_ID_PATTERN = /^[a-z0-9][a-z0-9-]{0,79}$/;
 type Props = {
   value: ClassificationFormState;
   onChange: (next: ClassificationFormState) => void;
-  lines?: string[];
   experiments?: string[];
   overlayRunId?: string | null;
   idPrefix?: string;
@@ -41,7 +40,6 @@ function titleFromSlug(slug: string): string {
 export function ClassificationFields({
   value,
   onChange,
-  lines,
   experiments,
   overlayRunId,
   idPrefix = "cls",
@@ -49,10 +47,6 @@ export function ClassificationFields({
   onCreateExperiment,
   onExperimentsChanged,
 }: Props) {
-  const lineOptions = useMemo(
-    () => sortedUnique(lines ?? getLineTaxonomy(), value.line),
-    [lines, value.line],
-  );
   const experimentOptions = useMemo(
     () => sortedUnique(experiments ?? getExperimentTaxonomy(), value.experiment),
     [experiments, value.experiment],
@@ -82,7 +76,7 @@ export function ClassificationFields({
   }
 
   function setStructural(
-    patch: Partial<Pick<ClassificationFormState, "line" | "experiment" | "runIndex">>,
+    patch: Partial<Pick<ClassificationFormState, "experiment" | "runIndex">>,
   ) {
     onChange(applyClassificationFieldPatch(value, patch));
   }
@@ -142,20 +136,6 @@ export function ClassificationFields({
       ) : null}
 
       <div className="row">
-        <div className="field">
-          <label htmlFor={`${idPrefix}-line`}>Line</label>
-          <select
-            id={`${idPrefix}-line`}
-            value={value.line}
-            onChange={(e) => setStructural({ line: e.target.value })}
-          >
-            {lineOptions.map((line) => (
-              <option key={line} value={line}>
-                {line}
-              </option>
-            ))}
-          </select>
-        </div>
         <div className="field" style={{ flex: "2 1 240px" }}>
           <label htmlFor={`${idPrefix}-experiment`}>Experiment</label>
           <select
@@ -230,11 +210,11 @@ export function ClassificationFields({
           onChange={(e) =>
             setField({ displayLabel: e.target.value, displayLabelManual: true })
           }
-          placeholder="F · exp3 test treatment · run 4"
+          placeholder="exp3 test treatment · run 4"
         />
         {!value.displayLabelManual ? (
           <p className="muted" style={{ margin: "0.35rem 0 0", fontSize: "0.85rem" }}>
-            Auto-built from line, experiment, and run index.
+            Auto-built from experiment and run index.
           </p>
         ) : null}
       </div>
