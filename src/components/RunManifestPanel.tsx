@@ -1,5 +1,10 @@
-import { isRunManifest } from "../types/runManifest";
 import type { HackathonRunRecord } from "../types/runExport";
+import {
+  manifestModelLine,
+  manifestModelSettings,
+  runManifestOf,
+  templateTreeHash,
+} from "../lib/manifestFields";
 
 function row(label: string, value: string | null | undefined) {
   if (!value?.trim()) return null;
@@ -12,23 +17,19 @@ function row(label: string, value: string | null | undefined) {
 }
 
 export function RunManifestPanel({ run }: { run: HackathonRunRecord }) {
-  const manifest = run.data.manifest;
-  if (!manifest || !isRunManifest(manifest)) return null;
+  const manifest = runManifestOf(run);
+  if (!manifest) return null;
 
   const exp = manifest.experiment;
   const template = manifest.template;
   const git = manifest.git;
-  const model = manifest.model;
-  const modelLine =
-    model && typeof model === "object"
-      ? [model.provider, model.model].filter((x) => typeof x === "string" && x).join(" / ")
-      : "";
+  const treeHash = templateTreeHash(manifest);
 
   return (
     <section className="panel">
       <h3>Run manifest</h3>
       <p className="muted" style={{ marginTop: 0, fontSize: "0.88rem" }}>
-        Provenance snapshot — what was mounted for this run (sibling to export, not in harness metrics).
+        Provenance snapshot — config, template, experiment, and model settings (sibling to export).
       </p>
       <dl className="manifest-dl">
         {row("Schema", manifest.schema)}
@@ -36,16 +37,19 @@ export function RunManifestPanel({ run }: { run: HackathonRunRecord }) {
         {row("Config hash", manifest.config_hash)}
         {row("Config schema", manifest.config_schema_version)}
         {row("Template", template?.id)}
-        {row("Template tree", template?.tree_hash)}
+        {row("Template tree", treeHash ?? undefined)}
         {row("Experiment cohort", exp?.cohort ?? undefined)}
         {row("Experiment arm", exp?.arm ?? undefined)}
         {row(
           "Experiment rep",
           typeof exp?.rep === "number" ? String(exp.rep) : undefined,
         )}
+        {row("Intervention", typeof exp?.intervention === "string" ? exp.intervention : undefined)}
         {row("Git branch", git?.branch ?? undefined)}
         {row("Git commit", git?.commit ?? undefined)}
-        {row("Model", modelLine || undefined)}
+        {row("Git dirty", git?.dirty ? "yes" : git?.dirty === false ? "no" : undefined)}
+        {row("Model", manifestModelLine(manifest) || undefined)}
+        {row("Model settings", manifestModelSettings(manifest) || undefined)}
         {row("Created", manifest.created_at)}
       </dl>
     </section>

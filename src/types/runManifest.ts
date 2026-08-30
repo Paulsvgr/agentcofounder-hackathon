@@ -10,6 +10,7 @@ export type RunManifestGit = {
 
 export type RunManifestTemplate = {
   id?: string;
+  tree_sha256?: string;
   tree_hash?: string;
   [key: string]: unknown;
 };
@@ -18,6 +19,7 @@ export type RunManifestExperiment = {
   cohort?: string | null;
   arm?: string | null;
   rep?: number | null;
+  intervention?: string | null;
   [key: string]: unknown;
 };
 
