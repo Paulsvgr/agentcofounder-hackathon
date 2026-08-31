@@ -6,10 +6,13 @@ import {
   setStoredAccessKey,
   updateRun,
 } from "../lib/api";
+import { AppRubricForm, emptyRubricState } from "../components/AppRubricForm";
+import { formatAppRating, isLegacyAppRating, rubricFromHuman } from "../lib/app-rubric";
 import { methodLabel, loadClassificationManifest } from "../lib/classification";
 import { shortRunId } from "../lib/actionFlow";
-import { humanFromRun, patchRunHumanFields } from "../lib/runPatch";
+import { humanFromRun, humanPatchFromForm, patchRunHumanFields } from "../lib/runPatch";
 import { formatNumber, weightedOf } from "../lib/stats";
+import type { AppRubricScores } from "../lib/app-rubric";
 
 export function FixRatingPage() {
   const { id } = useParams<{ id: string }>();
@@ -21,8 +24,9 @@ export function FixRatingPage() {
   const [status, setStatus] = useState("");
   const [weighted, setWeighted] = useState<number | null>(null);
   const [storedRun, setStoredRun] = useState<Awaited<ReturnType<typeof getRun>> | null>(null);
+  const [legacyNote, setLegacyNote] = useState<string | null>(null);
 
-  const [appRating, setAppRating] = useState("");
+  const [rubric, setRubric] = useState<AppRubricScores>(() => emptyRubricState());
   const [runComment, setRunComment] = useState("");
   const [accessKey, setAccessKey] = useState(getStoredAccessKey);
   const [saving, setSaving] = useState(false);
@@ -43,8 +47,13 @@ export function FixRatingPage() {
         setRunIdLabel(shortRunId(run.data.export?.meta?.run_id || run.id));
         setStatus(run.data.export?.harness?.status || "—");
         setWeighted(weightedOf(run));
-        setAppRating(human.app_rating !== null ? String(human.app_rating) : "");
+        setRubric(rubricFromHuman(human.app_rubric));
         setRunComment(human.run_comment);
+        if (isLegacyAppRating(human.app_rating, human.app_rubric)) {
+          setLegacyNote(formatAppRating(human.app_rating, human.app_rubric));
+        } else {
+          setLegacyNote(null);
+        }
       } catch (err) {
         if (!cancelled) {
           setError(err instanceof Error ? err.message : "Failed to load run.");
@@ -61,11 +70,6 @@ export function FixRatingPage() {
   async function onSave() {
     if (!storedRun || !id) return;
     setError(null);
-    const ratingNum = appRating.trim() === "" ? null : Number(appRating);
-    if (ratingNum !== null && (!Number.isFinite(ratingNum) || ratingNum < 0 || ratingNum > 10)) {
-      setError("App rating must be a number from 0 to 10, or leave empty.");
-      return;
-    }
     if (!accessKey.trim()) {
       setError("Enter the shared hackathon access key to save.");
       return;
@@ -73,12 +77,21 @@ export function FixRatingPage() {
 
     setSaving(true);
     try {
+      let humanPatch;
+      try {
+        humanPatch = humanPatchFromForm({
+          rubric,
+          app_comment: storedRun.data.human?.app_comment ?? storedRun.data.app_comment ?? "",
+          run_comment: runComment.trim(),
+        });
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Invalid rubric scores.");
+        setSaving(false);
+        return;
+      }
+
       setStoredAccessKey(accessKey.trim());
-      const data = patchRunHumanFields(storedRun, {
-        app_rating: ratingNum,
-        app_comment: storedRun.data.human?.app_comment ?? storedRun.data.app_comment ?? "",
-        run_comment: runComment.trim(),
-      });
+      const data = patchRunHumanFields(storedRun, humanPatch);
       await updateRun({
         id,
         data,
@@ -106,33 +119,30 @@ export function FixRatingPage() {
           {title} · {runIdLabel} · status {status}
           {weighted !== null ? ` · weighted ${formatNumber(weighted, 0)}` : ""}
         </p>
+        {legacyNote ? (
+          <div className="alert alert-warn" style={{ marginTop: 0 }}>
+            Previous score: <strong>{legacyNote}</strong>. Enter category scores below to re-score on
+            the 100-point rubric.
+          </div>
+        ) : null}
 
         <div className="stack">
-          <div className="row">
-            <div className="field">
-              <label htmlFor="rating">App rating (0–10)</label>
-              <input
-                id="rating"
-                type="number"
-                min={0}
-                max={10}
-                step={1}
-                value={appRating}
-                onChange={(e) => setAppRating(e.target.value)}
-                placeholder="e.g. 9"
-              />
-            </div>
-            <div className="field">
-              <label htmlFor="key">Access key (write)</label>
-              <input
-                id="key"
-                type="password"
-                autoComplete="off"
-                value={accessKey}
-                onChange={(e) => setAccessKey(e.target.value)}
-                placeholder="Shared team key"
-              />
-            </div>
+          <div className="field">
+            <label>App quality rubric</label>
+            <AppRubricForm rubric={rubric} onChange={setRubric} idPrefix="fix-rubric" />
+          </div>
+
+          <div className="field">
+            <label htmlFor="key">Access key (write)</label>
+            <input
+              id="key"
+              type="password"
+              autoComplete="off"
+              value={accessKey}
+              onChange={(e) => setAccessKey(e.target.value)}
+              placeholder="Shared team key"
+              style={{ maxWidth: 280 }}
+            />
           </div>
 
           <div className="field">

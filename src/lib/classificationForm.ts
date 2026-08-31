@@ -65,6 +65,7 @@ export function classificationFromExport(exportDoc: RunExport): RunClassificatio
       git_commit: exportDoc.meta.git_commit,
       approach_kind: exportDoc.meta.approach,
       app_rating: null,
+      app_rubric: null,
       app_comment: "",
       run_comment: "",
     },

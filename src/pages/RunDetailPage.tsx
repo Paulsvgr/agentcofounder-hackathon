@@ -11,6 +11,7 @@ import {
   loadClassificationManifest,
   methodLabel,
 } from "../lib/classification";
+import { formatAppRating } from "../lib/app-rubric";
 import { efficiencyOf, WEIGHTED_COST_TOOLTIP } from "../lib/efficiencyFields";
 import { formatNumber, shortCommit } from "../lib/stats";
 import { hasActionFlow, isExportV2, type HackathonRunRecord, type TestRun } from "../types/runExport";
@@ -194,7 +195,7 @@ export function RunDetailPage() {
           )}
           <div className="stat">
             <div className="label">App rating</div>
-            <div className="value">{human.app_rating ?? "—"}</div>
+            <div className="value">{formatAppRating(human.app_rating, human.app_rubric)}</div>
           </div>
         </div>
       </section>

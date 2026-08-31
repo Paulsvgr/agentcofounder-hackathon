@@ -26,7 +26,9 @@ import {
 } from "../lib/classificationForm";
 import { shortRunId } from "../lib/actionFlow";
 import { parseRunExport } from "../lib/parseExport";
-import { humanFromRun, patchRunExportHumanAndClassification } from "../lib/runPatch";
+import { AppRubricForm, emptyRubricState } from "../components/AppRubricForm";
+import { rubricFromHuman, type AppRubricScores } from "../lib/app-rubric";
+import { humanFromRun, humanPatchFromForm, patchRunExportHumanAndClassification } from "../lib/runPatch";
 import { HACKATHON_AUTHORS } from "../types/runExport";
 
 export function EditRunPage() {
@@ -39,7 +41,7 @@ export function EditRunPage() {
 
   const [author, setAuthor] = useState("");
   const [paste, setPaste] = useState("");
-  const [appRating, setAppRating] = useState("");
+  const [rubric, setRubric] = useState<AppRubricScores>(() => emptyRubricState());
   const [appComment, setAppComment] = useState("");
   const [runComment, setRunComment] = useState("");
   const [accessKey, setAccessKey] = useState(getStoredAccessKey);
@@ -86,7 +88,7 @@ export function EditRunPage() {
         setStoredRun(run);
         setAuthor(run.person);
         const human = humanFromRun(run);
-        setAppRating(human.app_rating !== null ? String(human.app_rating) : "");
+        setRubric(rubricFromHuman(human.app_rubric));
         setAppComment(human.app_comment);
         setRunComment(human.run_comment);
         setClassificationForm(classificationToFormState(effectiveClassification(run)));
@@ -126,9 +128,15 @@ export function EditRunPage() {
       return;
     }
 
-    const ratingNum = appRating.trim() === "" ? null : Number(appRating);
-    if (ratingNum !== null && (!Number.isFinite(ratingNum) || ratingNum < 0 || ratingNum > 10)) {
-      setError("App rating must be a number from 0 to 10, or leave empty.");
+    let humanPatch;
+    try {
+      humanPatch = humanPatchFromForm({
+        rubric,
+        app_comment: appComment.trim(),
+        run_comment: runComment.trim(),
+      });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Invalid rubric scores.");
       return;
     }
     if (!accessKey.trim()) {
@@ -142,11 +150,7 @@ export function EditRunPage() {
       const data = patchRunExportHumanAndClassification(
         storedRun,
         exportResult,
-        {
-          app_rating: ratingNum,
-          app_comment: appComment.trim(),
-          run_comment: runComment.trim(),
-        },
+        humanPatch,
         formStateToClassification(classificationForm),
       );
       await updateRun({
@@ -226,30 +230,22 @@ export function EditRunPage() {
             />
           </div>
 
-          <div className="row">
-            <div className="field">
-              <label htmlFor="rating">App rating (0–10)</label>
-              <input
-                id="rating"
-                type="number"
-                min={0}
-                max={10}
-                step={1}
-                value={appRating}
-                onChange={(e) => setAppRating(e.target.value)}
-              />
-            </div>
-            <div className="field">
-              <label htmlFor="key">Access key (write)</label>
-              <input
-                id="key"
-                type="password"
-                autoComplete="off"
-                value={accessKey}
-                onChange={(e) => setAccessKey(e.target.value)}
-                placeholder="Shared team key"
-              />
-            </div>
+          <div className="field">
+            <label>App quality rubric</label>
+            <AppRubricForm rubric={rubric} onChange={setRubric} idPrefix="edit-rubric" />
+          </div>
+
+          <div className="field">
+            <label htmlFor="key">Access key (write)</label>
+            <input
+              id="key"
+              type="password"
+              autoComplete="off"
+              value={accessKey}
+              onChange={(e) => setAccessKey(e.target.value)}
+              placeholder="Shared team key"
+              style={{ maxWidth: 280 }}
+            />
           </div>
 
           <div className="field">

@@ -15,6 +15,7 @@ import {
   methodTooltip,
   shouldHideEarlySmoke,
 } from "../lib/classification";
+import { effectiveRatingForCompare, formatAppRating } from "../lib/app-rubric";
 import { studyById, studiesMatchingArms } from "../lib/experimentCatalog";
 import type { ExperimentStudyId } from "../types/experiment";
 import { fetchPeople, listRuns } from "../lib/api";
@@ -250,8 +251,14 @@ export function RunsPage() {
         return new Date(rb).getTime() - new Date(ra).getTime();
       }
       if (sort === "rating_desc") {
-        const ra = effectiveHuman(a).app_rating ?? -1;
-        const rb = effectiveHuman(b).app_rating ?? -1;
+        const ra = effectiveRatingForCompare(
+          effectiveHuman(a).app_rating,
+          effectiveHuman(a).app_rubric,
+        ) ?? -1;
+        const rb = effectiveRatingForCompare(
+          effectiveHuman(b).app_rating,
+          effectiveHuman(b).app_rubric,
+        ) ?? -1;
         return rb - ra;
       }
       const wa = weightedOf(a);
@@ -605,7 +612,7 @@ export function RunsPage() {
                         <td className="num">{formatNumber(chartMedians.get(exKey) ?? null)}</td>
                         <td className="num">{exp?.harness?.model_calls ?? "—"}</td>
                         <td className="num">{formatNumber(exp?.efficiency?.wall_seconds)}</td>
-                        <td className="num">{human.app_rating ?? "—"}</td>
+                        <td className="num">{formatAppRating(human.app_rating, human.app_rubric)}</td>
                       </tr>
                     );
                   })}

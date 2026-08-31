@@ -27,6 +27,9 @@ import {
   normalizeDetected,
   type DetectedPaste,
 } from "../lib/parseExport";
+import { AppRubricForm, emptyRubricState } from "../components/AppRubricForm";
+import { humanPatchFromForm } from "../lib/runPatch";
+import type { AppRubricScores } from "../lib/app-rubric";
 import {
   HACKATHON_AUTHORS,
   type PasteKind,
@@ -72,7 +75,7 @@ export function AddRunPage() {
   const [gitBranch, setGitBranch] = useState("");
   const [gitCommit, setGitCommit] = useState("");
 
-  const [appRating, setAppRating] = useState("7");
+  const [rubric, setRubric] = useState<AppRubricScores>(() => emptyRubricState());
   const [appComment, setAppComment] = useState("");
   const [runComment, setRunComment] = useState("");
   const [accessKey, setAccessKey] = useState(getStoredAccessKey);
@@ -217,9 +220,15 @@ export function AddRunPage() {
   async function onSave() {
     if (!detected || !parsed) return;
     setError(null);
-    const ratingNum = Number(appRating);
-    if (!Number.isFinite(ratingNum) || ratingNum < 0 || ratingNum > 10) {
-      setError("App rating must be a number from 0 to 10.");
+    let humanPatch;
+    try {
+      humanPatch = humanPatchFromForm({
+        rubric,
+        app_comment: appComment.trim(),
+        run_comment: runComment.trim(),
+      });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Invalid rubric scores.");
       return;
     }
     if (!accessKey.trim()) {
@@ -235,9 +244,10 @@ export function AddRunPage() {
         paste: detected.raw,
         overrides: overridesFromForm(),
         classification: formStateToClassification(classificationForm),
-        app_rating: ratingNum,
-        app_comment: appComment.trim(),
-        run_comment: runComment.trim(),
+        app_rubric: humanPatch.app_rubric,
+        app_rating: humanPatch.app_rating,
+        app_comment: humanPatch.app_comment,
+        run_comment: humanPatch.run_comment,
         accessKey: accessKey.trim(),
       });
       navigate(`/runs/${record.id}`);
@@ -411,30 +421,22 @@ export function AddRunPage() {
                 idPrefix="add-cls"
               />
 
-              <div className="row">
-                <div className="field">
-                  <label htmlFor="rating">App rating (0–10)</label>
-                  <input
-                    id="rating"
-                    type="number"
-                    min={0}
-                    max={10}
-                    step={1}
-                    value={appRating}
-                    onChange={(e) => setAppRating(e.target.value)}
-                  />
-                </div>
-                <div className="field">
-                  <label htmlFor="key">Access key (write)</label>
-                  <input
-                    id="key"
-                    type="password"
-                    autoComplete="off"
-                    value={accessKey}
-                    onChange={(e) => setAccessKey(e.target.value)}
-                    placeholder="Shared team key"
-                  />
-                </div>
+              <div className="field">
+                <label>App quality rubric</label>
+                <AppRubricForm rubric={rubric} onChange={setRubric} idPrefix="add-rubric" />
+              </div>
+
+              <div className="field">
+                <label htmlFor="key">Access key (write)</label>
+                <input
+                  id="key"
+                  type="password"
+                  autoComplete="off"
+                  value={accessKey}
+                  onChange={(e) => setAccessKey(e.target.value)}
+                  placeholder="Shared team key"
+                  style={{ maxWidth: 280 }}
+                />
               </div>
 
               <div className="field">

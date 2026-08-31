@@ -5,27 +5,46 @@ import type {
   RunExport,
   RunHuman,
 } from "../types/runExport";
+import {
+  resolveStoredAppRating,
+  rubricTotal,
+  validateAppRubric,
+  type AppRubricScores,
+} from "./app-rubric";
 import { deriveFlags } from "./classification";
 
 export type HumanPatch = {
+  app_rubric: AppRubricScores | null;
   app_rating: number | null;
   app_comment: string;
   run_comment: string;
 };
+
+function buildHumanFields(human: HumanPatch): RunHuman {
+  const app_rubric = human.app_rubric;
+  const app_rating = resolveStoredAppRating(human.app_rating, app_rubric);
+  return {
+    app_rubric,
+    app_rating,
+    app_comment: human.app_comment,
+    run_comment: human.run_comment,
+  };
+}
+
+function applyHumanToData(data: HackathonRunData, human: RunHuman): void {
+  data.app_rubric = human.app_rubric;
+  data.app_rating = human.app_rating;
+  data.app_comment = human.app_comment;
+  data.run_comment = human.run_comment;
+  data.human = human;
+}
 
 export function patchRunHumanFields(
   run: HackathonRunRecord,
   human: HumanPatch,
 ): HackathonRunData {
   const data = structuredClone(run.data);
-  data.app_rating = human.app_rating;
-  data.app_comment = human.app_comment;
-  data.run_comment = human.run_comment;
-  data.human = {
-    app_rating: human.app_rating,
-    app_comment: human.app_comment,
-    run_comment: human.run_comment,
-  };
+  applyHumanToData(data, buildHumanFields(human));
   return data;
 }
 
@@ -62,22 +81,34 @@ export function patchRunExportAndHuman(
   data.git_branch = exportDoc.meta.git_branch;
   data.git_commit = exportDoc.meta.git_commit;
   data.approach_kind = exportDoc.meta.approach;
-  data.app_rating = human.app_rating;
-  data.app_comment = human.app_comment;
-  data.run_comment = human.run_comment;
-  data.human = {
-    app_rating: human.app_rating,
-    app_comment: human.app_comment,
-    run_comment: human.run_comment,
-  };
+  applyHumanToData(data, buildHumanFields(human));
   return data;
 }
 
 export function humanFromRun(run: HackathonRunRecord): RunHuman {
   const h = run.data.human;
+  const app_rubric = h?.app_rubric ?? run.data.app_rubric ?? null;
+  const app_rating = h?.app_rating ?? run.data.app_rating ?? null;
   return {
-    app_rating: h?.app_rating ?? run.data.app_rating ?? null,
+    app_rubric,
+    app_rating: resolveStoredAppRating(app_rating, app_rubric),
     app_comment: h?.app_comment ?? run.data.app_comment ?? "",
     run_comment: h?.run_comment ?? run.data.run_comment ?? "",
+  };
+}
+
+/** Validate rubric fields and return patch ready for save. */
+export function humanPatchFromForm(input: {
+  rubric: AppRubricScores;
+  app_comment: string;
+  run_comment: string;
+}): HumanPatch {
+  const app_rubric = validateAppRubric(input.rubric);
+  const total = rubricTotal(app_rubric);
+  return {
+    app_rubric,
+    app_rating: total,
+    app_comment: input.app_comment,
+    run_comment: input.run_comment,
   };
 }

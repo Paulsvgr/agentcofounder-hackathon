@@ -14,7 +14,8 @@ import {
   ZAxis,
 } from "recharts";
 import { useTheme } from "../lib/theme";
-import { experimentKey, methodLabel } from "../lib/classification";
+import { experimentKey, methodLabel, effectiveHuman } from "../lib/classification";
+import { effectiveRatingForCompare } from "../lib/app-rubric";
 import {
   formatNumber,
   medianWeightedByExperiment,
@@ -81,8 +82,9 @@ export function RunsCharts({ runs, onSelectRun }: Props) {
       .map((run) => {
         const w = weightedOf(run);
         if (w === null) return null;
-        const rawRating = run.data.app_rating ?? run.data.human?.app_rating;
-        const rated = rawRating !== null && rawRating !== undefined;
+        const human = effectiveHuman(run);
+        const compareRating = effectiveRatingForCompare(human.app_rating, human.app_rubric);
+        const rated = compareRating !== null;
         const experiment = experimentKey(run);
         const label = methodLabel(run);
         return {
@@ -91,9 +93,9 @@ export function RunsCharts({ runs, onSelectRun }: Props) {
           approach: experiment,
           label,
           weighted: w,
-          rating: rated ? Number(rawRating) : UNRATED_Y,
+          rating: rated ? compareRating : UNRATED_Y,
           rated,
-          ratingLabel: rated ? String(rawRating) : "n/a",
+          ratingLabel: rated ? String(compareRating) : "n/a",
           fill: colorFor(experiment),
         };
       })
@@ -171,13 +173,13 @@ export function RunsCharts({ runs, onSelectRun }: Props) {
                 type="number"
                 dataKey="rating"
                 name="rating"
-                domain={[-1.5, 10]}
-                ticks={[-0.8, 0, 2, 4, 6, 8, 10]}
+                domain={[-1.5, 100]}
+                ticks={[-0.8, 0, 20, 40, 60, 80, 100]}
                 tick={ct.tick}
                 stroke={ct.axis}
                 tickFormatter={(v) => (Number(v) < 0 ? "n/a" : String(v))}
                 label={{
-                  value: "app rating",
+                  value: "app rating (/100)",
                   angle: -90,
                   position: "insideLeft",
                   fill: ct.labelFill,

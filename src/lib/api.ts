@@ -6,6 +6,7 @@ import type {
   RunClassification,
   RunExport,
 } from "../types/runExport";
+import type { AppRubricScores } from "./app-rubric";
 
 const API_BASE = (
   import.meta.env.VITE_HACKATHON_API_BASE || "https://admin.coretechs.se/hackathon"
@@ -35,9 +36,16 @@ export function buildRunData(exp: RunExport, human: HumanFields): HackathonRunDa
     git_branch: exp.meta.git_branch,
     git_commit: exp.meta.git_commit,
     approach_kind: exp.meta.approach,
+    app_rubric: human.app_rubric,
     app_rating: human.app_rating,
     app_comment: human.app_comment,
     run_comment: human.run_comment,
+    human: {
+      app_rubric: human.app_rubric,
+      app_rating: human.app_rating,
+      app_comment: human.app_comment,
+      run_comment: human.run_comment,
+    },
     export: exp,
   };
 }
@@ -180,6 +188,7 @@ export async function createRunFromPaste(input: {
   paste: unknown;
   overrides?: PasteOverrides;
   classification?: RunClassification;
+  app_rubric?: AppRubricScores | null;
   app_rating?: number | null;
   app_comment?: string;
   run_comment?: string;
@@ -193,6 +202,7 @@ export async function createRunFromPaste(input: {
       paste: input.paste,
       overrides: input.overrides || {},
       classification: input.classification,
+      app_rubric: input.app_rubric ?? null,
       app_rating: input.app_rating ?? null,
       app_comment: input.app_comment || "",
       run_comment: input.run_comment || "",
